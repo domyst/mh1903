@@ -5209,7 +5209,213 @@ printf("%02x ",rxdata);
 	}
 }
 
-
+void CheckCMD1()	// uart
+{
+	uchar rxdata;
+	//rxdata = DMATEst[CmdCnt];
+	rxdata = pop(&uart);
+	#if defined(DEBUG)		//pbbch 181011 test add
+printf("%02x ",rxdata);
+#endif	
+	switch(ReceiveStat)
+	{
+	case _STX:
+		if(rxdata == STX)
+		{	
+			CMDTimeInit();
+			CmdCnt++;
+			ReceiveStat = _LENGTH_H;
+			if_bcc_count=0;
+		}
+		else
+		{
+			ReceiveStat = ERROR;
+		}
+		break;
+	case _LENGTH_H:
+		CMDTimeInit();
+		CmdLRC ^= rxdata;
+		cmd_format.Len_H = rxdata;
+		ReceiveStat = _LENGTH_L;
+		CmdCnt++;
+		break;
+	case _LENGTH_L:
+		CMDTimeInit();
+		CmdLRC ^= rxdata;
+		cmd_format.Len_L = rxdata;
+		Make_Cmd_data_Len(cmd_format.Len_H,cmd_format.Len_L);//CM~DATA 길이 
+		{
+			ReceiveStat = _COMMAND;
+		}
+		 CmdCnt++;
+		break;
+	case _COMMAND:
+		{
+			if(Cmd_data_len==1 && (rxdata=='Z' || rxdata == 'V'))
+			{
+				gProtocol = OLD;
+				CMDTimeInit();
+				CmdLRC ^= rxdata;
+				cmd_format.CMD= rxdata;
+				CmdCnt++;
+				ReceiveStat = _DATA;
+			}
+			else if(((rxdata >= 0x30)&&(rxdata <= 0x44))||rxdata=='Z')
+			{
+				gProtocol = NEW;
+				CMDTimeInit();
+				cmd_format.CMD= rxdata;
+				CmdCnt++;
+				ReceiveStat = _PARAMETER;
+			}
+			else
+			{
+				ReceiveStat = ERROR;
+			}
+		}
+		break;
+	case _PARAMETER:
+		{
+			CMDTimeInit();
+			cmd_format.PM= rxdata;
+			CmdCnt++;
+			if(Cmd_data_len == 2)ReceiveStat = _CRC;// Data가 없는 
+			else ReceiveStat = _DATA;
+		}
+		break;
+	case _DATA:
+		CMDTimeInit();
+		CmdLRC ^= rxdata;
+		cmd_format.DATA[DataCnt++] = rxdata;
+		CmdCnt++;
+		if((rxdata == ETX) && (Cmd_data_len == 1))// 'V' or 'Z' (old protocol)
+		{
+			ReceiveStat = _BCC;
+		}
+		else if(DataCnt == (Cmd_data_len-2))//CM PM 제외한 DATA 길이만..
+		{
+			ReceiveStat = _CRC;
+		}
+		#if 1		//pbbch 180220 when protocol length error or etc erro occure, nack response send and 
+		else if(Cmd_data_len < DataCnt)
+		{
+			Response('K');		
+			//DMAInit();
+			ReceiveStat = ERROR;
+		}
+		#endif
+		break;
+	case _CRC:
+		CMDTimeInit();
+		CmdCnt++;
+		if(if_bcc_count)
+		{
+			if_bcc_data = (ushort)(if_bcc_data << 8) & 0xFF00 | ((ushort)rxdata & 0x00FF);
+			#if 0
+			if(!Crc16Calc(if_bcc_data,cmd_format,Cmd_data_len,0))
+			{
+				ReceiveStat = _ETX;
+			}
+			else
+			{
+				Response('K');		
+				ReceiveStat = ERROR;
+			}
+			#else
+			ReceiveStat = _ETX;
+			#endif
+		}
+		else 
+		{
+			if_bcc_data = (ushort)rxdata;
+		}
+		if_bcc_count++;
+		break;
+	case _ETX:
+		CMDTimeInit();
+		cmd_format.DATA[DataCnt++] = rxdata;
+		CmdCnt++;
+		if(ETX == rxdata)
+		{
+			#if 1
+			if(!Crc16Calc(if_bcc_data,&cmd_format.Len_H,Cmd_data_len+3,0))//Len_H 부터 ETX Field까지 CRC16한 값
+			{
+				ReceiveStat = _PACKET_END;
+			}
+			else
+			{
+				#if 1
+				Response('K');		
+				ReceiveStat = ERROR;
+				#else//test
+				ReceiveStat = _PACKET_END;
+				#endif
+			}
+			#else
+			if(if_bcc_data == getCRC(&cmd_format.Len_H,0,Cmd_data_len+1))
+			{
+				ReceiveStat = _PACKET_END;
+			}
+			else
+			{
+				Response('K');		
+				ReceiveStat = ERROR;
+			}
+			#endif
+			
+		}
+		else
+		{
+			Response('K');
+			DMAInit();
+		}	
+		break;
+	case _BCC:
+		CMDTimeInit();
+		if(CmdLRC == rxdata)
+		{
+			ReceiveStat = _PACKET_END;
+		}
+		else
+		{
+			Response('K');
+			DMAInit();
+		}	
+		break;
+	default:
+		ReceiveStat = ERROR;
+		break;
+	}
+	
+	if(ReceiveStat == _PACKET_END)
+	{
+		#if defined(USE_IWDG_RESET)
+		/* Reload IWDG counter */
+		IWDG_ReloadCounter();
+		#endif
+		{
+			#if 0		//pbbch 180221 dll test용도로 무조건 nack 처리.
+			Response('K');	
+			#else
+			if(gProtocol)Cmd_proc_new(cmd_format.CMD,cmd_format.PM,cmd_format.DATA,Cmd_data_len,RESET);
+			else Cmd_proc(cmd_format.CMD,cmd_format.DATA,Cmd_data_len,RESET);
+			#endif
+		}
+		DMAInit();
+		#if 1 		//pbbch 180129 uart normal packet detect. so fucture uart only use.
+		 gusb_protect.packet_complete=2;
+		 #endif
+	}
+	else if(ReceiveStat == ERROR)
+	{
+		DMAInit();
+	}
+	else
+	{
+		//domyst TIM_Cmd(TIM6, ENABLE); //TIM_Cmd(TIM2, ENABLE);
+		TIM_Cmd(TIMM0, TIM_6, ENABLE); 	// for mh1903
+	}
+}
 #if 1
 void ICPowerON_Test()
 {

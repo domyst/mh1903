@@ -11,7 +11,7 @@ typedef unsigned char u8;
 typedef unsigned short u16;
 typedef unsigned long u32;
 
-//domyst
+//domyst	지워라... bit banding 처리함
 bool rCardIN;
 bool bLockState;
 
@@ -345,6 +345,40 @@ void protect_uart_processing1(void)
         CheckCMD();
     }
     
+	#if 1		//pbbch 180220 when protocol length error or etc erro occure,  timout nack send
+	if(lprotocol_timeout_flg)
+	{
+		Response('K');
+		lprotocol_timeout_flg=0;
+	}
+	#endif
+}
+
+void protect_uart_processing2(void)
+{
+	/// always [2011/5/17] while문으로 계속 접근 시 속도 저하 발생
+	if(g_pcb_version == PCB_CR30_R3)
+	{
+		CmdDMACnt = DMABufferSize - DMA_CNDTR5;
+	}
+	else
+	{
+		CmdDMACnt = DMABufferSize - DMA_CNDTR3;
+	}	
+	if(CmdDMACnt > CmdCnt)
+	{
+		CheckCMD();
+	}
+	if(CmdDMACnt < CmdCnt)
+	{
+		DMAInit();
+	}	
+
+	if (!isEmpty(&uart))
+	{
+		CheckCMD();
+	}
+
 	#if 1		//pbbch 180220 when protocol length error or etc erro occure,  timout nack send
 	if(lprotocol_timeout_flg)
 	{
