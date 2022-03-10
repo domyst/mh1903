@@ -169,11 +169,11 @@ void SAM_Configuration(void)
 
 void LED_YELLOW_ON(uint8_t data)
 {
-    GPIO_InitTypeDef  GPIO_InitStruct;
-	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_4;
-	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
-	GPIO_Init(GPIOH, &GPIO_InitStruct);
+    // GPIO_InitTypeDef  GPIO_InitStruct;
+	// GPIO_InitStruct.GPIO_Pin = GPIO_Pin_4;
+	// GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	// GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	// GPIO_Init(GPIOH, &GPIO_InitStruct);
 
 	if (data == 1)
         GPIO_ResetBits(GPIOH, GPIO_Pin_4);
@@ -183,11 +183,11 @@ void LED_YELLOW_ON(uint8_t data)
 
 void LED_RED_ON(uint8_t data)
 {
-    GPIO_InitTypeDef  GPIO_InitStruct;
-	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_5;
-	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
-	GPIO_Init(GPIOH, &GPIO_InitStruct);
+    // GPIO_InitTypeDef  GPIO_InitStruct;
+	// GPIO_InitStruct.GPIO_Pin = GPIO_Pin_5;
+	// GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	// GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	// GPIO_Init(GPIOH, &GPIO_InitStruct);
 
 	if (data == 1)
         GPIO_ResetBits(GPIOH, GPIO_Pin_5);
@@ -245,33 +245,33 @@ uint8_t Read_MST_SIG(void)
 
 uint8_t Read_CardEject(void)
 {
-    GPIO_InitTypeDef  GPIO_InitStruct;
-	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_3;
-	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPU;
-	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
-	GPIO_Init(GPIOG, &GPIO_InitStruct);
+    // GPIO_InitTypeDef  GPIO_InitStruct;
+	// GPIO_InitStruct.GPIO_Pin = GPIO_Pin_3;
+	// GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPU;
+	// GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	// GPIO_Init(GPIOG, &GPIO_InitStruct);
 
     return GPIO_ReadInputDataBit(GPIOG, GPIO_Pin_3);
 }
 
 uint8_t Read_BardcodeGoodLED(void)
 {
-    GPIO_InitTypeDef  GPIO_InitStruct;
-	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_10;
-	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPU;
-	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
-	GPIO_Init(GPIOF, &GPIO_InitStruct);
+    // GPIO_InitTypeDef  GPIO_InitStruct;
+	// GPIO_InitStruct.GPIO_Pin = GPIO_Pin_10;
+	// GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPU;
+	// GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	// GPIO_Init(GPIOF, &GPIO_InitStruct);
 
     return GPIO_ReadInputDataBit(GPIOF, GPIO_Pin_10);
 }
 
 void barcode_trigger(uint8_t data)
 {
-    GPIO_InitTypeDef  GPIO_InitStruct;
-	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_9;
-	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
-	GPIO_Init(GPIOF, &GPIO_InitStruct);
+    // GPIO_InitTypeDef  GPIO_InitStruct;
+	// GPIO_InitStruct.GPIO_Pin = GPIO_Pin_9;
+	// GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	// GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	// GPIO_Init(GPIOF, &GPIO_InitStruct);
 
 	if (data == 1)
         GPIO_SetBits(GPIOF, GPIO_Pin_9);        // barcode      
@@ -294,11 +294,11 @@ void barcode_rst()
 
 void sam_mux_io(uint8_t port)
 {
-    GPIO_InitTypeDef  GPIO_InitStruct;
-	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11;
-	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
-	GPIO_Init(GPIOD, &GPIO_InitStruct);
+    // GPIO_InitTypeDef  GPIO_InitStruct;
+	// GPIO_InitStruct.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11;
+	// GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	// GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	// GPIO_Init(GPIOD, &GPIO_InitStruct);
 
     switch (port)
     {
@@ -394,7 +394,7 @@ void MSR_Configuration(void)
 	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_SPI2, ENABLE);
 	SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_SPI2, ENABLE);
 
-    GPIO_PinRemapConfig(GPIOE, GPIO_Pin_2 | GPIO_Pin_4 | GPIO_Pin_5, GPIO_Remap_0);
+    GPIO_PinRemapConfig(GPIOE, GPIO_Pin_2 | GPIO_Pin_4 | GPIO_Pin_5, GPIO_Remap_0); // GPIOE ??
 
     SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
 	SPI_InitStructure.SPI_DataSize = SPI_DataSize_16b;
@@ -432,11 +432,11 @@ void MSR_Configuration(void)
 
 void msr_rst(void)
 {
-    GPIO_InitTypeDef  GPIO_InitStruct;
-	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_3;
-	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
-	GPIO_Init(GPIOB, &GPIO_InitStruct);
+    // GPIO_InitTypeDef  GPIO_InitStruct;
+	// GPIO_InitStruct.GPIO_Pin = GPIO_Pin_3;
+	// GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	// GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	// GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 	GPIO_ResetBits(GPIOB, GPIO_Pin_3); 
     Delay_Ms(40);

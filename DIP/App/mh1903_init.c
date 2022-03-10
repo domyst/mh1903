@@ -23,6 +23,15 @@
 
 
 /* Private macro -------------------------------------------------------------*/
+#define IFM_VCC_5V_3V_PORT	GPIOH					
+#define IFM_VCC_1_8V_PORT	GPIOH					
+#define IFM_VCC_5V_3V_PIN	GPIO_Pin_1				
+#define IFM_VCC_1_8V_PIN	GPIO_Pin_0				
+
+#define SAM_VCC_5V_3V_PORT	GPIOH					
+#define SAM_VCC_1_8V_PORT	GPIOH					
+#define SAM_VCC_5V_3V_PIN	GPIO_Pin_3
+#define SAM_VCC_1_8V_PIN	GPIO_Pin_2	
 /* Private variables ---------------------------------------------------------*/
 GPIO_InitTypeDef GPIO_InitStructure;
 RCC_ClocksTypeDef RCC_ClockFreq;
@@ -286,7 +295,7 @@ void SYSTICK_initial(void)
 /******************************************************************************************************/
 /* GPIO_port_initial	:								              */												
 /******************************************************************************************************/
-void GPIO_port_initial(void)
+void GPIO_port_initial_org(void)
 {
 	/********************
 	/// GPIOA
@@ -574,6 +583,651 @@ void GPIO_port_initial(void)
 
 }
 
+// domyst
+// IFM port init
+void IFM_SCI0_IOConfig(void)
+{
+	GPIO_PinRemapConfig(GPIOA, GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10, GPIO_Remap_0); //ALT0
+    //card detect
+    SYSCTRL->PHER_CTRL &= ~BIT(16); // SCI0 card detection signal -> 0 : active high (1: ative low)
+//    SYSCTRL->PHER_CTRL |= BIT(16);
+    //Choose active level(Low level active).
+    SYSCTRL->PHER_CTRL |= BIT(20);  // SCI0 VCC effective signal level selection -> 1 : active low (0: active high)
+}
+
+// SAM port init
+void SAM_SCI2_IOConfig(void)
+{
+	GPIO_PinRemapConfig(GPIOE, GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12, GPIO_Remap_0); //ALT0
+    //card detect
+    SYSCTRL->PHER_CTRL &= ~BIT(18); // SCI0 card detection signal -> 0 : active high (1: ative low)
+//    SYSCTRL->PHER_CTRL |= BIT(16);
+    //Choose active level(Low level active).
+    SYSCTRL->PHER_CTRL |= BIT(22);  // SCI0 VCC effective signal level selection -> 1 : active low (0: active high)
+}
+
+void Select_IFM_VCC(void)
+{
+/*	
+#define IFM_VCC_5V_3V_PORT	GPIOH					
+#define IFM_VCC_1_8V_PORT	GPIOH					
+#define IFM_VCC_5V_3V_PIN	GPIO_Pin_1				
+#define IFM_VCC_1_8V_PIN	GPIO_Pin_0				
+*/	
+	GPIO_InitTypeDef  GPIO_InitStruct;
+
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_1;		// IFM_5V_3.3V_EN
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOH, &GPIO_InitStruct);			
+
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_0;		// IFM_1.8V_EN
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOH, &GPIO_InitStruct);
+	
+ 	GPIO_SetBits(IFM_VCC_1_8V_PORT,IFM_VCC_1_8V_PIN);					//In order to use the VCC_5V_3V, you have to set the 1.8V Pin to High.
+//	GPIO_ResetBits(VCC_1_8V_PORT,VCC_1_8V_PIN);					//In order to use the 1.8V, you have to set the VCC_5V_3V Pin to High.
+	
+	GPIO_SetBits(IFM_VCC_5V_3V_PORT,IFM_VCC_5V_3V_PIN);		//5V select	
+//	GPIO_ResetBits(IFM_VCC_5V_3V_PORT,IFM_VCC_5V_3V_PIN);		//3V select
+}
+
+void Select_SAM_VCC(void)
+{
+/*	
+#define SAM_VCC_5V_3V_PORT	GPIOH					
+#define SAM_VCC_1_8V_PORT	GPIOH					
+#define SAM_VCC_5V_3V_PIN	GPIO_Pin_3
+#define SAM_VCC_1_8V_PIN	GPIO_Pin_2					
+*/	
+	GPIO_InitTypeDef  GPIO_InitStruct;
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_3;		// SAM_5V_3.3V_EN
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_2;		// IFM_1.8V_EN
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOF, &GPIO_InitStruct);
+	
+ 	GPIO_SetBits(SAM_VCC_1_8V_PORT, SAM_VCC_1_8V_PIN);					//In order to use the VCC_5V_3V, you have to set the 1.8V Pin to High.
+//	GPIO_ResetBits(SAM_VCC_1_8V_PORT,VCC_1_8V_PIN);					//In order to use the 1.8V, you have to set the VCC_5V_3V Pin to High.
+	
+	GPIO_SetBits(SAM_VCC_5V_3V_PORT, SAM_VCC_5V_3V_PIN);		//5V select	
+//	GPIO_ResetBits(SAM_VCC_5V_3V_PORT,VCC_5V_3V_PIN);		//3V select
+}
+
+void IFM_SCI0_NVICConfig(void)
+{
+	NVIC_InitTypeDef NVIC_InitStructure;
+    
+    NVIC_SetPriorityGrouping(NVIC_PriorityGroup_0);
+    
+    NVIC_InitStructure.NVIC_IRQChannel = SCI0_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
+}
+
+void SAM_SCI2_NVICConfig(void)
+{
+	NVIC_InitTypeDef NVIC_InitStructure;
+    
+    NVIC_SetPriorityGrouping(NVIC_PriorityGroup_0);
+    
+    NVIC_InitStructure.NVIC_IRQChannel = SCI2_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
+}
+
+// IFM configuration
+void IFM_Configuration(void)
+{
+	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_SCI0, ENABLE);
+    SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_SCI0, ENABLE);
+
+	IFM_SCI0_IOConfig();
+
+	Select_IFM_VCC();
+	SCI_ConfigEMV(0x01, 3000000);
+
+	//SCI_NVICConfig();	
+	IFM_SCI0_NVICConfig();
+}
+
+// SAM configuration
+void SAM_Configuration(void)
+{
+	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_SCI2, ENABLE);
+    SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_SCI2, ENABLE);
+
+	SAM_SCI2_IOConfig();
+
+	Select_SAM_VCC();
+	SCI_ConfigEMV(0x01, 3000000);
+
+	//SCI_NVICConfig();	
+	SAM_SCI2_NVICConfig();
+}
+
+// CPU_TXD2, CPU_RXD2 for debug, barcode
+// 0 for debug, 1 for barcode
+void UART2_select(uint8_t data)
+{
+    GPIO_InitTypeDef  GPIO_InitStruct;
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_7;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOH, &GPIO_InitStruct);
+
+	if (data == 1)
+        GPIO_SetBits(GPIOH, GPIO_Pin_7);        // barcode      
+	else        
+        GPIO_ResetBits(GPIOH, GPIO_Pin_7);      // debug
+}
+
+// UART0, UART1, UART2
+void UART_Configuration(void)
+{
+	UART_InitTypeDef UART_InitStructure;
+
+	//UART0 for main(host)
+	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_UART0, ENABLE);
+	SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_UART0, ENABLE);
+	
+	GPIO_PinRemapConfig(GPIOA, GPIO_Pin_0 | GPIO_Pin_1, GPIO_Remap_0);	
+	
+	UART_InitStructure.UART_BaudRate = 115200;
+	UART_InitStructure.UART_WordLength = UART_WordLength_8b;
+	UART_InitStructure.UART_StopBits = UART_StopBits_1;
+	UART_InitStructure.UART_Parity = UART_Parity_No;
+	
+	UART_Init(UART0, &UART_InitStructure);
+
+	//UART1 for RF
+	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_UART1, ENABLE);
+	SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_UART1, ENABLE);
+	
+	GPIO_PinRemapConfig(GPIOB, GPIO_Pin_12 | GPIO_Pin_13, GPIO_Remap_3);	
+	
+	UART_InitStructure.UART_BaudRate = 115200;
+	UART_InitStructure.UART_WordLength = UART_WordLength_8b;
+	UART_InitStructure.UART_StopBits = UART_StopBits_1;
+	UART_InitStructure.UART_Parity = UART_Parity_No;
+	
+	UART_Init(UART1, &UART_InitStructure);
+
+	//UART2 for debug, barcode
+	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_UART2, ENABLE);
+	SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_UART2, ENABLE);
+	
+	GPIO_PinRemapConfig(GPIOB, GPIO_Pin_8 | GPIO_Pin_9, GPIO_Remap_2);	
+	
+	UART_InitStructure.UART_BaudRate = 115200;
+	UART_InitStructure.UART_WordLength = UART_WordLength_8b;
+	UART_InitStructure.UART_StopBits = UART_StopBits_1;
+	UART_InitStructure.UART_Parity = UART_Parity_No;
+	
+	UART_Init(UART2, &UART_InitStructure);
+
+	// uart select for uart2
+}
+
+// MMD1100 port init
+void MMD1100_MSR_Configuration(void)
+{
+    SPI_InitTypeDef SPI_InitStructure;
+    GPIO_InitTypeDef GPIO_InitStruct;
+
+    // SPI2
+	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_SPI2, ENABLE);
+	SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_SPI2, ENABLE);
+
+    GPIO_PinRemapConfig(GPIOB, GPIO_Pin_2 | GPIO_Pin_4 | GPIO_Pin_5, GPIO_Remap_0); // GPIOE ??
+
+    SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
+	SPI_InitStructure.SPI_DataSize = SPI_DataSize_16b;		// 확인 필 ???
+	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
+	SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
+	SPI_InitStructure.SPI_NSS = SPI_NSS_0;
+	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256; // 확인 필??
+	SPI_InitStructure.SPI_RXFIFOFullThreshold = SPI_RXFIFOFullThreshold_1;
+	SPI_InitStructure.SPI_TXFIFOEmptyThreshold = SPI_TXFIFOEmptyThreshold_10;
+	
+	SPI_Init(SPIM2, &SPI_InitStructure);
+    SPI_Cmd(SPIM2, ENABLE);
+
+	// PB2	SPI_CLK		ALT0
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_2;		// GPIO_Pin_2 | GPIO_Pin_4 | GPIO_Pin_5; ???
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_0;
+	GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+	// PB1	Ready		ALT1  
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_1;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPU;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+	// PB3	RST
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_3;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+
+
+	// //PE14	SPI_MOSI	ALT2
+	// GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	// GPIO_InitStruct.GPIO_Pin = GPIO_Pin_14;
+	// GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;		//modified by domyst GPIO_Remap_1
+	// GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+	// //PE15	SPI_MISO	ALT2
+	// GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPU;
+	// GPIO_InitStruct.GPIO_Pin = GPIO_Pin_15;
+	// GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;		//modified by domyst GPIO_Remap_1
+	// GPIO_Init(GPIOE, &GPIO_InitStruct);
+}
+
+void GPIO_port_initial(void)
+{
+	GPIO_InitTypeDef  GPIO_InitStruct;
+
+	// UART_SELECT
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_7;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOH, &GPIO_InitStruct);
+
+	// IFM_POWER_ON
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_5;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+	// SOLENOID POWER ON
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_3;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+	// SENSOR POWER ON
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_0;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+	// MMD1100
+
+	// EEPROM PG13, 14, 15
+
+	// IFM, SAM 1.8, 3, 5V
+
+	// LED, MST
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOH, &GPIO_InitStruct);
+
+	// MST
+	// GPIO_InitStruct.GPIO_Pin = GPIO_Pin_6;
+	// GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	// GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	// GPIO_Init(GPIOH, &GPIO_InitStruct);
+
+	// CPU_MODE, USB DETECT, IC_CARD_DETECTION
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 \
+							   GPIO_Pin_12 | GPIO_Pin_13;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPU;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOH, &GPIO_InitStruct);
+
+	// MST SIG, SAM CARD DETECTION
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_14 | GPIO_Pin_15;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPU;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+	// FRONT, INNER SENSOR, ANTI_SKIM, CARD_END SENSOR, SOL LOCK SENSOR
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 \
+							   GPIO_Pin_15;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPU;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+	// SAM MUX
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+	// BARCODE RST, TRIGGER
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+	// BARCODE GOOD LED
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_10;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPU;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+	// USB RST
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_12;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+	// CARD EJECT
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_3;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPU;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOG, &GPIO_InitStruct);
+
+
+
+
+
+
+#if 0 //
+	/********************
+	/// GPIOA
+	*********************/
+
+
+
+
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+
+	/********************
+	GPIO_Pin_0	DMS_AMP1
+	GPIO_Pin_1	DMS_AMP2
+	GPIO_Pin_2	DMS_AMP3
+	GPIO_Pin_3	F2F_2
+	GPIO_Pin_6	F2F_3
+	GPIO_Pin_8	F2F_1
+	*********************/
+	/// always [2010/11/2] MS card Amplitude 측정 용 ADC 연결
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 ;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+//// for anti skimm control, currently not used!
+//	/// 20150921 hyesun Anti Skimming-defense sol & func sensor
+//	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_1 | GPIO_Pin_2;
+// 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+// 	GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+	/// always [2011/3/2] F2F 신호 수신
+	//	GPIO_Pin_3	F2F_2
+	//	GPIO_Pin_6	F2F_3
+	//	GPIO_Pin_8	F2F_1
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_3 | GPIO_Pin_6| GPIO_Pin_8;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+	/// USB Con ON
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
+  	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	#if 1		//pbbch 180129 usb con on set....DP line must do pullup
+	GPIO_ResetBits(GPIOA, GPIO_Pin_7);
+	#endif
+
+	/// sensor 3(Front), 4(Inner) AIN
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_4 | GPIO_Pin_5 ;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+	
+	/********************
+	GPIOB
+	**********************/
+	/// always [2010/11/2] Enable GPIOE clock for SOL_CON, IFM_ON, SENSOR_ON, USART 3
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
+	
+	/********************
+	GPIO_Pin_0	SOL_CON
+	GPIO_Pin_1	/RESET GEMPRO
+	GPIO_Pin_7	CARD_DETECTION
+	GPIO_Pin_8	SENSOR_PWR_ON
+	**********************/
+	#ifdef USE_PWM
+	/// always [2010/11/30] PWM for sol
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	#else
+	/// always [2010/11/30] PWM for sol
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	#endif
+
+#if 1		//pbbch 190412 reset pin 분리 reset rising time 500ns>100ns
+	// IIC_WP, IIC_SCL, IIC_SDA, SENSOR_ON, CARD_STATE_OUT
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_5| GPIO_Pin_6|GPIO_Pin_7| GPIO_Pin_8 | GPIO_Pin_9;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	GPIO_SetBits(GPIOB, GPIO_Pin_9);			// card detect pin high init//pbbch 190329 add
+
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_1;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	GPIO_ResetBits(GPIOB,GPIO_Pin_1);			//Reset control port
+
+#else
+	// IFM_nRESET, IIC_WP, IIC_SCL, IIC_SDA, SENSOR_ON, CARD_STATE_OUT
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_1|GPIO_Pin_5| GPIO_Pin_6|GPIO_Pin_7| GPIO_Pin_8 | GPIO_Pin_9;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+	#if 1		//pbbch 180320 Card detect default high....no card detect status..detect time is lock sensing or activation sequence
+	#if 1		//pbbch 190319 Reset port low init		//pbbch 190329 update\
+	GPIO_SetBits(GPIOB, GPIO_Pin_9);			// card detect pin high init
+	GPIO_ResetBits(GPIOB,GPIO_Pin_1);		//Reset control port
+	#else
+	GPIO_SetBits(GPIOB, GPIO_Pin_9);	//
+	GPIO_SetBits(GPIOB, GPIO_Pin_1);	//pbbch 180321 reset high setting
+
+	//IFM_reset_excution(0);			//pbbch 180321 reset function add..but CR30 do fail in first transaction...we don't know reason. so ifm reset don't need.
+	#endif
+	#endif
+#endif
+	// BOOT1
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_2;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+	// SW_INPUT
+	GPIO_InitStructure.GPIO_Pin =GPIO_Pin_15;
+  	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	
+	/// RFU
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_12;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+	/********************
+	GPIOC
+	**********************/
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
+	/// always [2010/11/2] Enable GPIOC clock for RDD signal 1,2,3, USART4 TX, RX, USART5 TX
+	//	GPIO_Pin_10	U4_TX
+	//	GPIO_Pin_11	U4_RX
+	//	GPIO_Pin_12	U5_TX
+	/// Sensor1,2
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_0| GPIO_Pin_1;
+	//GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;//GPIO_Mode_AIN;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+#if 0
+	/// 20150921 hyesun Anti Skimming input
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2 | GPIO_Pin_3;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+#else
+	#if 1		//pbbch 180528 sensor5(front sensor) gpio config change
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_4;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+	
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_5;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+	#else
+	/// 20160307 hyesun PCB1 SAM MUX Ctrl
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_4| GPIO_Pin_5;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+	#endif
+#endif
+
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_6| GPIO_Pin_7| GPIO_Pin_8| GPIO_Pin_9;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    	GPIO_Init(GPIOC, &GPIO_InitStructure);
+	#if 1		//pbbch 190319 power on port low init		//pbbch 190329 update
+	GPIO_ResetBits(GPIOC,GPIO_Pin_9);		//power control port
+	#endif
+
+	/// NC
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_13| GPIO_Pin_14| GPIO_Pin_15;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+	/********************
+	GPIOD
+	**********************/
+	/// always [2010/11/2] Enable GPIOC clock for SENSOR 1,2,3,4, LED 1,2, F2F signal 1, 2, 3
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD, ENABLE);
+	/********************
+	GPIO_Pin_8	RCP3
+	GPIO_Pin_9	MRD3
+	GPIO_Pin_10	CEN
+	GPIO_Pin_11	RCP2
+	GPIO_Pin_12	MRD2
+	GPIO_Pin_13	RCP1
+	GPIO_Pin_14	MRD1
+	GPIO_Pin_15	nCLS1
+	*****************/
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_11| GPIO_Pin_12| GPIO_Pin_13| GPIO_Pin_14| GPIO_Pin_15;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOD, &GPIO_InitStructure);
+
+	/// always [2010/11/2] MS DECODER CHIP ENABLE
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_10 ;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOD, &GPIO_InitStructure);
+	#if 1		//pbbch 180207 ms decoder chip reset signal low setting
+	GPIO_ResetBits(GPIOD,GPIO_Pin_10);
+	#endif
+
+	/// PCB2 SAM MUX Ctrl
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7 ;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOD, &GPIO_InitStructure);
+
+	#if 1		//pbbch 180503 sen5 추가로 board에 따른 sensor 처리를 변경 해야 함. 따라서 구분자 추가.  
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_0 | GPIO_Pin_1;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOD, &GPIO_InitStructure);
+
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_3;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOD, &GPIO_InitStructure);
+	#else
+	/// NC
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_0 | GPIO_Pin_1|GPIO_Pin_3;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOD, &GPIO_InitStructure);
+	#endif
+		
+	/********************
+	GPIOE
+	**********************/
+	/// always [2010/11/2] Enable GPIOE clock for SENSOR 1,2,3,4, LED 1,2, F2F signal 1, 2, 3
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOE, ENABLE);
+	/********************
+	GPIO_Pin_4	CARD_EJECT
+	GPIO_Pin_5	RED LED
+	
+	GPIO_Pin_7	YELLOW LED
+	GPIO_Pin_9	USB D
+	*****************/
+	// PCB_GEM_POS Sensor input
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOE, &GPIO_InitStructure);
+
+	/// eject button (interrupt)
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_4;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOE, &GPIO_InitStructure);
+
+	/// DMS_AMP 1, 2, 3
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_8 | GPIO_Pin_10| GPIO_Pin_11;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN; // decoder read에 영향이 있는지 확인 할것.
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_Init(GPIOE, &GPIO_InitStructure);
+
+	/// USB_DET
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_9;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOE, &GPIO_InitStructure);
+
+	
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_5 | GPIO_Pin_7 | GPIO_Pin_12  | GPIO_Pin_13| GPIO_Pin_14| GPIO_Pin_15;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOE, &GPIO_InitStructure);
+	
+	/// NC
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_6;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOE, &GPIO_InitStructure);
+#endif
+}
 /******************************************************************************************************/
 /* TIME1_initial	:	Track 2							              */
 /* 0.03185sec time set. */
@@ -599,7 +1253,6 @@ void TIME1_initial(void){
   //TIM_Cmd(TIM1, ENABLE);
   /// always [2011/5/17] 타이머 pwm 사용 시 타이머 1,8의 경우 따로 pwm output enable 함수를 실행해야 함
  // TIM_CtrlPWMOutputs(TIM1, ENABLE);
-
 }
 
 
@@ -1325,9 +1978,6 @@ void DMA_initial(void)
 	DMA_InitStruct.DMA_PeripheralDataSize = DMA_DataSize_Byte;			//DMA_DataSize_Word;
 	DMA_InitStruct.DMA_PeripheralBurstSize = DMA_BurstSize_1;
 	
-    // domyst
-    DMA_InitStruct.DMA_PeripheralDataSize = DMABufferSize;          //518
-    //
 
 	DMA_InitStruct.DMA_MemoryBaseAddr = (u32)&DMATEst;					//(uint32_t)&dst_Buf[0];
 	DMA_InitStruct.DMA_MemoryInc = DMA_Inc_Increment;
@@ -1880,7 +2530,7 @@ void OptionByte_initial_Response()
 /******************************************************************************************************/
 void STAT_initial()
 { 	
-	SENSOR_ON;
+	SENSOR_ON;		// SENSOR POWER ON
 
 	//-----------------------------------
 	// IFM module POWER ON
@@ -1907,7 +2557,7 @@ void STAT_initial()
 	Non_MS_DATA;
 
 	/// always [2011/1/31] Sub Key 설정 전에는 off상태
-	UseDesOFF;
+	UseDesOFF;		// 확인 ???
 	
 	//MasterKeyInit();
 	
@@ -2214,7 +2864,7 @@ void Watchdog_initial(void)
 /******************************************************************************************************/
 /* CORTEX_initial	:		        						      */												
 /******************************************************************************************************/
-void CORTEX_initial(void)
+void CORTEX_initial_org(void)
 {
 //	ushort Datasize = 0;
 	PLL_initial();		// PLL Initial
@@ -2305,6 +2955,213 @@ void CORTEX_initial(void)
 	TIME5_initial();//Track 3
 	TIME6_initial();//comm Time Out
 
+	#if 0		//pbbch 180207 ms decoder chip reset signal set move.
+	//TR6201_RESET_ON;//TR6201 Reset
+	//delay_ms(10);
+	TR6201_RESET_OFF;//TR6201 Reset
+	#endif
+	
+	//Gp_initial();
+#if 1		//pbbch 180102 usb connect status function add
+	#ifdef	UseUsb
+
+	#if 1	//pbbch 180129 usb protect logic add
+		protect_usb_detect();
+		if(gusb_protect.detect) init_usb_configure_exe();
+	#else//pbbch 180102 usb connect status function add
+		if(!Usb_connect_status_check())
+		{
+			USB_Interrupts_Config();
+			Set_USBClock();
+			USB_Init();
+			/// always [2011/12/27] USB 연결 시 연결 될때 까지 대기
+			WaitingUSBCon(3,300);
+		}
+	#endif
+
+	#else		//pbbch 180123 neicp code add
+	USB_Con_OFF;
+	//USB_Con_ON;
+	#endif
+#else
+	#ifdef	UseUsb
+	USB_Interrupts_Config();
+	Set_USBClock();
+	USB_Init();
+	/// always [2011/12/27] USB 연결 시 연결 될때 까지 대기
+	WaitingUSBCon(3,300);
+	#endif
+#endif
+
+	FlashDataInit();
+	OptionByte_initial();	//HOST comm initialize
+	
+#ifdef USE_RF
+	Check_RF_Con();
+#endif
+
+	/// 20160307 hyesun : DMA_initial 후에 ADC_initial 해야 순서대로 ADC DMA 함.
+	DMA_initial();
+	if(g_pcb_version != PCB_GEM_POS)
+	{
+		ADC_initial();
+	}
+	DMAInit();
+	EXTI_initial();
+	
+	SYSTICK_initial();		// shutter 2sec time out
+#if 0		//pbbch 180319 avoid protocol error, move init response posion	
+	OptionByte_initial_Response();	//응답
+#endif
+	
+#if defined(USE_IWDG_RESET)
+	Watchdog_initial();
+#endif
+
+#if defined(USE_ICC_115200)		//pbbch 180123 neicp code add
+	#if 0
+	SAM_initial();
+	#else
+		#if 1		//pbbch 190319 cr30 초기화 위치  수정.//pbbch 190329 update//pbbch 190401 power on reset 부분 SAM_initial 함수로 merge
+					//pbbch 190412 power reset 최오 1회로 fix.
+		IFM_OFF;
+		delay_ms(300); // 50ms 지연.
+		IFM_ON; 
+		delay_ms(300); // 300ms 지연.
+		#endif
+		u8 ctr=3;
+		while(ctr--)
+		{
+			if(SAM_initial()) break;
+			delay_ms(10);
+		}
+	#endif
+#endif  
+
+	#if 1		//pbbch 180207 ms decoder chip reset signal low setting
+	delay_ms(1);		//delay need minimum 100us after power on 
+	GPIO_SetBits(GPIOD,GPIO_Pin_10);
+	#endif
+}
+
+// mh1903 system init
+void CORTEX_initial(void)
+{
+//	ushort Datasize = 0;
+	// PLL_initial();		// PLL Initial
+	// NVIC_initial();               // vector initial
+
+	// System init
+	SYSCTRL_SYSCLKSourceSelect(SELECT_INC12M);		// internal clock
+	SYSCTRL_PLLConfig(SYSCTRL_PLL_192MHz);
+	SYSCTRL_PLLDivConfig(SYSCTRL_PLL_Div_None);
+	SYSCTRL_HCLKConfig(SYSCTRL_HCLK_Div2);
+//	SYSCTRL_PCLKConfig(SYSCTRL_PCLK_Div2);	/* PCLK >= 48M */
+
+	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_GPIO, ENABLE);
+	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_UART0 | SYSCTRL_APBPeriph_TIMM0 | SYSCTRL_APBPeriph_GPIO, ENABLE);
+
+	SYSTICK_Init();
+
+	// NVIC_Configuration();
+
+#if 1 //pbbch 180129 usb protect logic add
+	memset(&gusb_protect.detect,0x00,sizeof(gusb_protect));
+	gmain_process_status=0;			//pbbch 180201 reset 이후 초기화 문제로 인하여 추가.
+#endif	
+	
+	// domyst
+	//g_pcb_version = PCB_Check(); // jsshin 2016.03.03: add New PCB check
+
+	GPIO_port_initial();		// gpio initial
+
+#if 1		//pbbch 180503 sen5 추가로 board에 따른 sensor 처리를 변경 해야 함. 따라서 구분자 추가.  
+	gsen_array_type= read_sen_array_type();
+	//gsen_array_type=SEN12345_ARRAY;			//pbbch 180510 test용도
+#endif
+#if 0	//pbbch 180129 usb con on set....DP line must do pullup
+	USB_Con_OFF; // USB 사용 안함???
+#endif
+	#if 0 // domyst
+	if(g_pcb_version == PCB_CR30_R3)
+	{
+		#if defined(USE_REAL_EEPROM)
+		IIC_initial();
+	 	AT24Cxx_FindDevice();
+
+		#if 0
+		uchar Data[8192];
+		memset(Data, 0x00, 8192);
+		AT24Cxx_Read(0, Data, 8192); // temp
+		/*
+		__disable_irq();
+		memset(Data, 0x55, 1024);
+		AT24Cxx_Write(0x1000, Data, 1024); // temp
+		memset(Data, 0x00, 1024);
+		AT24Cxx_Read(0x1000, Data, 1024); // temp
+
+		memset(Data, 0xAA, 1024);
+		AT24Cxx_Write(0x1000, Data, 1024); // temp
+		memset(Data, 0x00, 1024);
+		AT24Cxx_Read(0x1000, Data, 1024); // temp
+
+		memset(Data, 0xFF, 1024);
+		AT24Cxx_Write(0x1000, Data, 1024); // temp
+		memset(Data, 0x00, 1024);
+		AT24Cxx_Read(0x1000, Data, 1024); // temp
+		memset(Data, 0x00, 1024);
+		__enable_irq();
+
+		while(1);
+		*/
+		#endif
+		#endif
+	}
+	#endif // domyst
+	
+	STAT_initial();
+	
+#ifdef USE_RF
+	if(g_pcb_version == PCB_CR30_R3)
+	{
+		
+		#ifdef RF_NFC
+		UART3_initial(115200, 0);
+		#else
+		UART3_initial(9600, 0); //PCB == R3 : RF
+		#endif
+	}
+	else
+	{
+		#ifdef RF_NFC
+		UART1_initial(115200, 0);
+		#else
+		UART1_initial(9600, 0); //PCB == R3 : RF
+		#endif
+	}
+#endif
+	// UART4_initial(BAUDRATE_9600); //IFM
+	// UART5_initial(); //DBG
+
+	IFM_Configuration();	// IFM configuration
+	SAM_Configuration();
+	UART_Configuration();	// UART0,1,2
+	TIMER_Configuration();	// Timer0 init
+	NVIC_Configuration();	// Timer0 Interrupt enable
+
+#if defined(DEBUG)		//pbbch 181011 test add
+	printf("initqqq\r\n");
+#endif	
+	
+	#if 0 // domyst
+	TIME1_initial();//Track2
+	//TIME2_initial();// for Anti-Skimming Sol, reserved!
+	TIME3_initial();//Sol
+	TIME4_initial();//Track 1
+	TIME5_initial();//Track 3
+	TIME6_initial();//comm Time Out
+	#endif 
+	
 	#if 0		//pbbch 180207 ms decoder chip reset signal set move.
 	//TR6201_RESET_ON;//TR6201 Reset
 	//delay_ms(10);

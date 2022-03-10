@@ -51,8 +51,12 @@ void CORTEX_initial(void);
 //#define IFM_STAT  (*(volatile unsigned long *)(0x4221811C))
 
 /// always [2010/11/17] test
-#define SENSOR_ON		pPB8_1
-#define SENSOR_OFF		pPB8_0
+// #define SENSOR_ON		pPB8_1
+// #define SENSOR_OFF		pPB8_0
+// domyst
+#define SENSOR_ON		GPIO_SetBits(GPIOB, GPIO_Pin_0)
+#define SENSOR_OFF		GPIO_ResetBits(GPIOB, GPIO_Pin_0)
+
 //#define SENSOR_STAT  (*(volatile unsigned long *)(0x42218120))
 
 /// always [2010/11/17] test
@@ -75,14 +79,14 @@ void CORTEX_initial(void);
 #define GPIO_REAR_SENSOR_STAT	pPE2_IN
 #define GPIO_BOARD_CHECK		pPE3_IN
 
-#define RED_ON  pPE7_0
-#define RED_OFF  pPE7_1
-#define RED_TOG  pPE7_T
+#define RED_ON  GPIO_ResetBits(GPIOH, GPIO_Pin_5)                   // pPE7_0
+#define RED_OFF GPIO_SetBits(GPIOH, GPIO_Pin_5)                     // pPE7_1
+#define RED_TOG  pPE7_T         // 추가
 //#define RED_STAT  (*(volatile unsigned long *)(0x4223019C))
 
-#define GREEN_ON  pPE5_0
-#define GREEN_OFF  pPE5_1
-#define GREEN_TOG  pPE5_T
+#define GREEN_ON    GPIO_ResetBits(GPIOH, GPIO_Pin_4)             //pPE5_0
+#define GREEN_OFF   GPIO_SetBits(GPIOH, GPIO_Pin_4)              //pPE5_1
+#define GREEN_TOG  pPE5_T       // 추가
 //#define GREEN_STAT  (*(volatile unsigned long *)(0x42230194))
 
 #define AllLedOff	RED_OFF;GREEN_OFF

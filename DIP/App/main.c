@@ -758,6 +758,49 @@ int main(void)
 
 }
 #endif
+
+// main loop
+void main(void)
+{
+	memset(gSTATE, 0, sizeof(gSTATE));
+	CORTEX_initial(); 
+
+	// Status_F2F_1 = F2F_1_IN;
+	// Status_F2F_2 = F2F_2_IN;
+	// Status_F2F_3 = F2F_3_IN;
+
+	#if defined(DEBUG)		//pbbch 181011 test add
+	printf("main init end\r\n");
+	#endif
+
+	#if 1		//pbbch 180319 avoid protocol error, move init response posion	
+	OptionByte_initial_Response();	//응답
+	#endif
+
+	#if 1//pbbch 181012 host uart init fucntion add....kiss 노래방 대응 용.
+	reinit_host_port_init();
+	#endif
+
+#if 0		//pbbch 180305 __disable_irq() test add
+	__disable_irq(); 
+	//__SETPRIMASK();
+#endif
+	
+	while(1)
+	{	
+		#if defined(USE_IWDG_RESET)
+		/* Reload IWDG counter */
+		IWDG_ReloadCounter();
+		#endif
+		Check_STAT();
+
+		#if 0
+		ICPowerON_Test();
+		#endif
+	}
+		
+}
+
 void menu_select(uint8_t menu)
 {
 		switch(menu)
@@ -1442,6 +1485,8 @@ void SCI_IOConfig(void)
 
 }
 #endif
+
+// IFM configuration
 void SCI_Configuration(void)
 {
 	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_SCI0, ENABLE);

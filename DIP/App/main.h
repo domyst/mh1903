@@ -81,8 +81,8 @@ extern u8 g_pcb_version;
 
 #define testp *(u32 *)(0x40004800)
 
-#define USB_Con_ON pPA7_0
-#define USB_Con_OFF pPA7_1
+#define USB_Con_ON 	GPIO_ResetBits(GPIOF, GPIO_Pin_12)		//pPA7_0
+#define USB_Con_OFF GPIO_SetBits(GPIOF, GPIO_Pin_12)		//pPA7_1
 
 //#define CheckFrontCnt 3///2
 
