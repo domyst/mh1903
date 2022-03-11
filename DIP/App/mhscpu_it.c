@@ -227,6 +227,60 @@ void EXTI0_IRQHandler(void)
 
 	
 }
+
+// rear sensor, pc12 external interrupt
+void EXTI2_IRQHandler(void)		// domyst
+{
+	extern uint8_t	button_count;
+	uint8_t	i;
+	uint8_t	chattering_count;
+	uint8_t	dummy;
+//	printf("EXTI0_IRQHandler In\r\n");
+//	printf("EXTI0_GPIO_Status %08X\r\n", EXTI_GetITStatus());
+//	printf("EXTI0_GPIO_Status %08X\r\n", EXTI_GetITLineStatus(EXTI_Line0));
+	EXTI_ClearITPendingBit(EXTI_Line2);
+	NVIC_ClearPendingIRQ(EXTI2_IRQn);
+	
+	if (EXTI_GetITLineStatus(EXTI_Line2) != RESET)
+	{	
+		//if(g_pcb_version == PCB_GEM_POS)
+		//{
+			if((TempFlashData.ModuleType == USEMS)||(TempFlashData.ModuleType == USEALL))
+			{
+				__disable_irq(); //__SETPRIMASK(); // jsshin 2015.08.18 change with CMSIS core func
+				#if defined(KTC_MODEL)
+				Non_MS_DATA; // jsshin 2015.10.12
+				#endif
+				MS_R_Read_ON;
+				MS_Bit_DATA_R();
+				__enable_irq(); //__RESETPRIMASK(); // jsshin 2015.08.18 change with CMSIS core func
+			}
+		//}
+		//EXTI_ClearITPendingBit(EXTI_Line2);
+	}
+	
+}
+
+// EXTI_Line6, PG3, card eject
+void EXTI6_IRQHandler(void)		// domyst
+{
+	extern uint8_t	button_count;
+	uint8_t	i;
+	uint8_t	chattering_count;
+	uint8_t	dummy;
+//	printf("EXTI0_IRQHandler In\r\n");
+//	printf("EXTI0_GPIO_Status %08X\r\n", EXTI_GetITStatus());
+//	printf("EXTI0_GPIO_Status %08X\r\n", EXTI_GetITLineStatus(EXTI_Line0));
+	EXTI_ClearITPendingBit(EXTI_Line6);
+	NVIC_ClearPendingIRQ(EXTI6_IRQn);
+	
+	if (EXTI_GetITLineStatus(EXTI_Line6) != RESET)
+	{	
+		E_CmdProc(200);
+		//EXTI_ClearITPendingBit(EXTI_Line6);
+	}
+}
+
 void MSR_IRQHandler(void)
 {
 	

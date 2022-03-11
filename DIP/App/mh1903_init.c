@@ -1783,7 +1783,7 @@ void UART5_initial()
 /******************************************************************************************************/
 /* EXTI_initial	:		FRONT SENSOR, REAR SENSOR 작동에 의한 MS 디코드, CARD EJECT				      */												
 /******************************************************************************************************/
-void EXTI_initial()
+void EXTI_initial_org()
 {
 	//NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
 	 
@@ -1881,7 +1881,161 @@ void EXTI_initial()
   	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   	NVIC_Init(&NVIC_InitStructure);
 }
+//	domyst
+void NVIC_Configuration(void)
+{
+	NVIC_InitTypeDef NVIC_InitStructure;
+	NVIC_SetPriorityGrouping(NVIC_PriorityGroup_3);
+	
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI0_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+    
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI1_IRQn;
+	NVIC_Init(&NVIC_InitStructure);
+	
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI2_IRQn;
+	NVIC_Init(&NVIC_InitStructure);
+	
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI3_IRQn;
+	NVIC_Init(&NVIC_InitStructure);
+	
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI4_IRQn;
+	NVIC_Init(&NVIC_InitStructure);
 
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI5_IRQn;
+	NVIC_Init(&NVIC_InitStructure);
+	
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI6_IRQn;
+	NVIC_Init(&NVIC_InitStructure);
+	
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI7_IRQn;
+	NVIC_Init(&NVIC_InitStructure);	
+}
+// end of domyst
+
+void EXTI_initial()
+{
+	// rear sensor, pc12, card remove
+	NVIC_InitTypeDef NVIC_InitStructure;
+	NVIC_SetPriorityGrouping(NVIC_PriorityGroup_2);
+	
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI2_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+	
+	EXTI_LineConfig(EXTI_Line2, EXTI_PinSource12, EXTI_Trigger_Falling);
+
+	// Solenoid UnLock interrupt 주석이 잘못되어 있음
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI6_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+	
+	EXTI_LineConfig(EXTI_Line6, EXTI_PinSource13, EXTI_Trigger_Falling);
+
+
+	//NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
+	 
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
+
+	if(g_pcb_version == PCB_GEM_POS)
+	{
+		/*
+		/// always [2011/3/2] Card insert / Front Sensor interrupt
+		GPIO_EXTILineConfig(GPIO_PortSourceGPIOE,GPIO_PinSource1);
+		EXTI_InitStruct.EXTI_Line = EXTI_Line1;
+		EXTI_InitStruct.EXTI_LineCmd = ENABLE;
+		EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
+		EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
+		EXTI_Init(&EXTI_InitStruct);
+		EXTI_ClearITPendingBit(EXTI_Line1);
+		*/
+	
+		/// always [2011/3/2] Card remove / Rear Sensor interrupt
+		GPIO_EXTILineConfig(GPIO_PortSourceGPIOE,GPIO_PinSource2);
+		EXTI_InitStruct.EXTI_Line = EXTI_Line2;
+		EXTI_InitStruct.EXTI_LineCmd = ENABLE;
+		EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
+		EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Falling;
+		EXTI_Init(&EXTI_InitStruct);
+		EXTI_ClearITPendingBit(EXTI_Line2);
+	}
+	else
+	{
+		/// always [2011/3/2] Card remove / Rear Sensor interrupt
+		GPIO_EXTILineConfig(GPIO_PortSourceGPIOC,GPIO_PinSource1);
+		EXTI_InitStruct.EXTI_Line = EXTI_Line1;
+		EXTI_InitStruct.EXTI_LineCmd = ENABLE;
+		EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
+		EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Falling;
+		EXTI_Init(&EXTI_InitStruct);
+		EXTI_ClearITPendingBit(EXTI_Line1);
+	}
+
+	/// always [2011/3/2] Solenoid UnLock interrupt
+	GPIO_EXTILineConfig(GPIO_PortSourceGPIOE,GPIO_PinSource4);
+	EXTI_InitStruct.EXTI_Line = EXTI_Line4;
+	EXTI_InitStruct.EXTI_LineCmd = ENABLE;
+	EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
+	EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Falling;
+	/// always [2011/3/24] usb 테스트용
+	//EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising_Falling;
+	EXTI_Init(&EXTI_InitStruct);
+	EXTI_ClearITPendingBit(EXTI_Line4);
+	
+#ifdef	UseUsb
+	/// always [2011/3/21] usb
+	// jsshin 2015.11.25 : USB_DET 라인은 PE9 이다!!! 오류!!!
+	EXTI_ClearITPendingBit(EXTI_Line18);
+	
+	EXTI_InitStruct.EXTI_Line = EXTI_Line18;
+	EXTI_InitStruct.EXTI_LineCmd = ENABLE;
+	//EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
+	EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
+	EXTI_Init(&EXTI_InitStruct);
+#endif
+
+	/* Enable the EXT Interrupt */
+	if(g_pcb_version == PCB_GEM_POS)
+	{
+		/*
+		// card insert
+	  	NVIC_InitStructure.NVIC_IRQChannel = EXTI1_IRQChannel;
+	  	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	  	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+	  	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	  	NVIC_Init(&NVIC_InitStructure);
+		*/	
+		// card remove
+	  	NVIC_InitStructure.NVIC_IRQChannel = EXTI2_IRQn;
+	  	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	  	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+	  	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	  	NVIC_Init(&NVIC_InitStructure);	
+	}
+	else
+	{
+		// card remove
+	  	NVIC_InitStructure.NVIC_IRQChannel = EXTI1_IRQn;
+	  	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	  	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+	  	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	  	NVIC_Init(&NVIC_InitStructure);
+	}
+
+	// solenoid unLock interrupt
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI4_IRQn;
+  	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+  	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+  	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+  	NVIC_Init(&NVIC_InitStructure);
+}
 /******************************************************************************************************/
 /* DMA_initial	:		used for ADC 						      */
 /******************************************************************************************************/
@@ -2308,7 +2462,7 @@ void FlashSettingInit(uchar FlashInit)
 		TempFlashData.SN_hanmega = 0;
 #endif
 		
-		memset(TempFlashData.SerialNumber,0x30,sizeof(uchar) * 7);
+		memset(TempFlashData.SerialNumber,0x30,sizeof(uchar) * 7);	// domyst uchar == uint8_t
 		
 		FlashDataWrite();
 	}
@@ -2450,6 +2604,59 @@ void OptionByte_initial(void)
 	{
 		UART3_initial(Baudrate,HardwareFlow);
 	}
+
+	LockUse = LockuseFlag;
+
+}
+// domyst
+void OptionByte_initial1(void)
+{
+	uchar OptionByte;
+	uchar BaudrateStat;
+	uint Baudrate;
+	uchar HardwareFlowStat;
+	ushort HardwareFlow;
+	uchar LockuseFlag;
+#if 0		//pbbch 171212 warning across
+	uchar ResetFlag;
+	uchar DownloadFlag;
+
+	uchar Dummy[1];
+#endif	
+
+	
+
+	OptionByte = (uchar)bOptionByte & 0xff  ;
+
+	if(OptionByte == 0xff)
+	{
+		OptionByte = 0x10;		//option byte : 0x10 0xff
+		FLASH_Unlock();
+		FLASH_EraseOptionBytes();					
+		FLASH_ProgramOptionByteData(0x1ffff804,OptionByte);
+	}
+	
+	BaudrateStat = (OptionByte >> 4)&(0x03);
+	HardwareFlowStat = (OptionByte >> 4)&(0x0c);
+	LockuseFlag = (OptionByte >> 2) & (0x1);
+#if 0		//pbbch 171212 warning across	
+	ResetFlag = (OptionByte >> 1) & (0x1);
+	DownloadFlag = OptionByte & 0x1;
+#endif	
+
+	/// always [2011/3/2] 메인 통신 설정
+	Baudrate = SetBaudrate(BaudrateStat);
+	HardwareFlow = SetHardwareFlow(HardwareFlowStat);
+	// if(g_pcb_version == PCB_CR30_R3)
+	// {
+	// 	UART1_initial(Baudrate,HardwareFlow);
+	// }
+	// else
+	// {
+	// 	UART3_initial(Baudrate,HardwareFlow);
+	// }
+
+	UART0_initial(Baudrate,HardwareFlow);
 
 	LockUse = LockuseFlag;
 
@@ -3161,7 +3368,7 @@ void CORTEX_initial(void)
 	TIME5_initial();//Track 3
 	TIME6_initial();//comm Time Out
 	#endif 
-	
+
 	#if 0		//pbbch 180207 ms decoder chip reset signal set move.
 	//TR6201_RESET_ON;//TR6201 Reset
 	//delay_ms(10);
@@ -3249,5 +3456,90 @@ void CORTEX_initial(void)
 	delay_ms(1);		//delay need minimum 100us after power on 
 	GPIO_SetBits(GPIOD,GPIO_Pin_10);
 	#endif
+}
+
+// domyst
+
+#define OptionDataSize 6//5
+typedef struct {
+	uint8_t LockuseFlag;
+	uint8_t ResetFlag;
+	uint8_t DownloadFlag;
+	uint8_t HardwareFlowStat;
+	uint8_t BaudrateStat;
+	uint8_t AutoLocktime;
+	uint8_t rsvd[FLASH_PAGE_SIZE-OptionDataSize];
+} OptionData;
+
+OptionData OptionFlashData;
+
+#define	FLASH_START_ADDR		0x1001000U
+#define FLASH_FULL_SIZE			0x100000U
+#define FLASH_START_ADDR1 	    0x1010000U
+#define FLASH_OPTION_ADDR		0x1030000U
+
+
+static int DataCheck(void *src, void *dst, uint32_t size)
+{
+	uint8_t *pSrc = (uint8_t *)src, *pDst = (uint8_t *)dst;
+	
+	if (memcmp(pDst, pSrc, size))
+	{
+		DataPrintf(pDst, size);
+		return -1;
+	}
+
+	return 0;
+}
+
+static int EraseCheck(uint32_t addr, uint32_t pagNum)
+{
+	uint32_t i = 0;
+	uint8_t erase_Buf[X25Q_PAGE_SIZE];
+
+	memset(erase_Buf, 0xFF, X25Q_PAGE_SIZE);	
+ 
+	CACHE_CleanAll(CACHE);
+	for (i = 0; i < pagNum; i++)
+	{	
+		if (-1 == DataCheck(erase_Buf, (uint8_t *)(addr + i * X25Q_PAGE_SIZE), sizeof(erase_Buf)))
+		{
+			printf("Erase Check failed!\n");
+            while(1);
+			return -1;
+		}
+	}	
+	
+	return 0;
+}
+
+void FLASH_EraseOptionBytes()
+{
+	FLASH_EraseSector(FLASH_OPTION_ADDR);
+	EraseCheck(FLASH_OPTION_ADDR, 16);
+}
+
+void FLASH_ProgramOptionByteData(uint32_t Address, uint8_t Data)
+{
+	uint8_t write_buf[X25Q_PAGE_SIZE];
+
+
+	memset(write_buf, 0xff, X25Q_PAGE_SIZE);		// FLASH_PAGE_SIZE
+	memcpy(write_buf, &Data, sizeof(Data))
+	// for (i = 0; i < pagNum; i++)
+	// {
+	// 	if (DATA_TYPE_ADDRESS_SELF == dataType)
+	// 	{
+	// 		for (j = 0; j < X25Q_PAGE_SIZE/4; j++)
+	// 		{
+	// 			write_Buf[j] = program_addr + i * X25Q_PAGE_SIZE + j;
+	// 		}
+	// 	}
+
+	// 	FLASH_ProgramPage(program_addr + i * X25Q_PAGE_SIZE, sizeof(write_Buf), (uint8_t*)(write_Buf));	
+	// }
+	
+	//FLASH_ProgramPage(FLASH_OPTION_ADDR, sizeof(Data), (uint8_t*)(Data));
+	FLASH_ProgramPage(FLASH_OPTION_ADDR, X25Q_PAGE_SIZE, write_buf);
 }
 /******************* (C) COPYRIGHT 2007 INSEM Inc ***************************************END OF FILE****/

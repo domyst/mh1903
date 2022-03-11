@@ -462,7 +462,7 @@ void Send_data1(uchar data)
 {
 	while(!UART_IsTXEmpty(UART0));
 	UART_SendData(UART0, (uint8_t) data);			// debug port : uart2, main : uart0
-	while(!UART_IsTXEmpty(UART0));
+	//while(!UART_IsTXEmpty(UART0));
 }
 
 void Uart_SendByte(int data)
@@ -1322,13 +1322,16 @@ void FlashDataWrite()
 
 	pKey = (u32 *)(&TempFlashData.MasterDesKey);
 	
-	FLASH_Unlock();
-	FLASH_ErasePage((u32)MasterKeyStorage);
-	for(WordDataCnt = 0; WordDataCnt <11;WordDataCnt ++ )
-	{
-		FLASH_ProgramWord((u32)(MasterKeyStorage+(WordDataCnt*4)),*(pKey+WordDataCnt));
-	}
-	FLASH_Lock();
+	// domyst FLASH_Unlock();
+	// domyst FLASH_ErasePage((u32)MasterKeyStorage);
+	FLASH_EraseSector(MasterKeyStorage);
+	// domyst
+	// for(WordDataCnt = 0; WordDataCnt <11;WordDataCnt ++ )
+	// {
+	// 	FLASH_ProgramWord((u32)(MasterKeyStorage+(WordDataCnt*4)),*(pKey+WordDataCnt));
+	// }
+	FLASH_ProgramPage(MasterKeyStorage, X25Q_PAGE_SIZE, &TempFlashData.MasterDesKey[0]);	// domyst 사이즈 확이필
+	// domyst FLASH_Lock();
 }
 /*******************************************************************************
 * Function Name  : MasterKeySet(uchar *KeyData,uchar KeyLeng)

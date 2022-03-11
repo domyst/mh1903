@@ -273,7 +273,8 @@
 
 // jshsin : 2015.09.03
 //#define LastFlashPage 0x0803FC00
-#define LastFlashPage 0x0803F800		// Page 127(2k bytes)
+//domyst #define LastFlashPage 0x0803F800		// Page 127(2k bytes)
+#define LastFlashPage		0x1030000U
 #define MasterKeyStorage LastFlashPage
 
 #define DMABufferSize 	518
@@ -421,6 +422,24 @@ typedef struct {
 	u8 BoardCheckFlag;
 	u8 AutoLocktime;
 } FlashData;
+
+#if 0	// domyst
+#define FlashDataSize 42//43
+typedef struct {
+	uint8_t MasterDesKey[24];
+	uint16_t IFM_WatingTime_Respons;
+	uint16_t IFM_WatingTime_INComm;
+	uint8_t IFM_RetryCnt_Respons;
+	uint8_t IFM_RetryCnt_INComm;
+	uint16_t Main_WatingTime_INComm;
+	uint8_t ModuleType;
+	uint8_t SerialNumber[7];
+	uint8_t BoardCheckFlag;
+//	uint8_t AutoLocktime;
+	uint8_t rsvd[FLASH_PAGE_SIZE-FlashDataSize];
+} FlashData;
+#endif	// end of domyst
+//
 
 typedef struct{
 	uchar bmFindexDindex;
