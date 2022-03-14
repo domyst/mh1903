@@ -178,40 +178,73 @@ void SYSCTRL_APBPeriphResetCmd(uint32_t SYSCTRL_APBPeriph, FunctionalState NewSt
     }
 }
 
-#if defined ( __ICCARM__ )
-__STATIC_INLINE void SYSCTRL_Sleep(void)
-#else
+#if defined(__CC_ARM)
 __STATIC_INLINE __ASM void SYSCTRL_Sleep(void)
-#endif
 {
-#if defined ( __ICCARM__ )
-   __asm("CPSID i");
-	__asm("NOP");
-	__asm("NOP");
-	__asm("NOP");
-	__asm("NOP");
-	__asm("WFI");
-	__asm("NOP");
-	__asm("NOP");
-	__asm("NOP");
-	__asm("NOP");
-	__asm("CPSIE i");
-	__asm("BX LR");
-#else
-  CPSID i;
-	NOP;
-	NOP;
-	NOP;
-	NOP;
-	WFI;
-	NOP;
-	NOP;
-	NOP;
-	NOP;
-	CPSIE i;
-	BX LR;
-#endif
+    CPSID i;
+    NOP;
+    NOP;
+    NOP;
+    NOP;
+    WFI;
+    NOP;
+    NOP;
+    NOP;
+    NOP;
+    CPSIE i;
+    BX    LR;
 }
+#elif defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
+__STATIC_FORCEINLINE void SYSCTRL_Sleep(void)
+{
+    __ASM volatile( //
+        "CPSID i;"
+        "NOP;"
+        "NOP;"
+        "NOP;"
+        "NOP;"
+        "WFI;"
+        "NOP;"
+        "NOP;"
+        "NOP;"
+        "NOP;"
+        "CPSIE i;"
+        "BX    LR;" //
+    );
+}
+#elif defined(__GNUC__)
+void SYSCTRL_Sleep(void)
+{
+    asm("CPSID i");
+    asm("nop");
+    asm("nop");
+    asm("nop");
+    asm("nop");
+    asm("wfi");
+    asm("nop");
+    asm("nop");
+    asm("nop");
+    asm("nop");
+    asm("CPSIE i");
+    asm("BX LR");
+}
+#elif defined(__ICCARM__)
+void SYSCTRL_Sleep(void)
+{
+    __ASM("CPSID i\n"
+          "NOP\n"
+          "NOP\n"
+          "NOP\n"
+          "NOP\n"
+          "WFI\n"
+          "NOP\n"
+          "NOP\n"
+          "NOP\n"
+          "NOP\n"
+          "CPSIE i\n"
+          "BX LR");
+}
+#endif
 
 /**
   * @brief  Enter low power mode
@@ -442,5 +475,26 @@ void SYSCTRL_GetClocksFreq(SYSCTRL_ClocksTypeDef *SYSCTRL_Clocks)
     SYSCTRL_Clocks->PCLK_Frequency = SYSCTRL->PCLK_1MS_VAL * 1000;
 }
 
+/**
+  * @brief  Get Chip SN
+  * @param  ChipSN£º16 Byte chip sn
+  * @retval None
+  */
+void SYSCTRL_GetChipSN(unsigned char *ChipSN)
+{
+    SYSCTRL_AHBPeriphClockCmd(SYSCTRL_AHBPeriph_OTP, ENABLE);
+    
+    memcpy(ChipSN, (uint32_t *)(SYSCTRL_CHIP_SN_ADDR), SYSCTRL_CHIP_SN_LEN);
+}
+
+/**
+  * @brief  Soft Reset
+  * @param  None
+  * @retval None
+  */
+void SYSCTRL_SoftReset(void)
+{
+    SYSCTRL_AHBPeriphResetCmd(SYSCTRL_GLB_RESET, ENABLE);
+}
 
 /**************************      (C) COPYRIGHT Megahunt    *****END OF FILE****/

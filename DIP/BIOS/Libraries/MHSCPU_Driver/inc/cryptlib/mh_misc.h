@@ -75,6 +75,7 @@ uint32_t mh_xor_u32(uint32_t *xor, uint32_t *src, uint16_t nwords, mh_rng_callba
 
 uint32_t mh_sum_u32(uint32_t *sum, uint32_t *src, uint16_t nwords, mh_rng_callback f_rng, void *p_rng);
 
+uint32_t mh_memswap_byte(void *dst, uint32_t dbytes, const void *src, uint32_t sbytes, mh_rng_callback f_rng, void *p_rng);
 #ifdef __cplusplus
 }
 #endif

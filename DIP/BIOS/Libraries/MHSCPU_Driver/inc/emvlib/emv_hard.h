@@ -19,7 +19,7 @@ extern "C" {
 #define  SM_VERSION_SN          "112"
 #define  SM_VERSION_FLAG        "R"
 #define  HAS_HIGH_SAM_PATCH     0   
-#define  MAX_SPEED_LTD          64
+#define  MAX_SPEED_LTD          1
     
     
 #define MH1901_L    (0x112)

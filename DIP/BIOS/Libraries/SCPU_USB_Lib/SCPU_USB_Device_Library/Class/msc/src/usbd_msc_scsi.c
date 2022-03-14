@@ -547,11 +547,11 @@ static int8_t SCSI_Write10 (uint8_t lun , uint8_t *params)
     }
     
     /* Prepare EP to receive first data packet */
-    MSC_BOT_State = BOT_DATA_OUT;  
+    MSC_BOT_State = BOT_DATA_OUT;
     DCD_EP_PrepareRx (cdev,
                       MSC_OUT_EP,
                       MSC_BOT_Data, 
-                      MIN (SCSI_blk_len, MSC_MEDIA_PACKET));  
+                      MIN (SCSI_blk_len, MSC_MAX_PACKET));
   }
   else /* Write Process ongoing */
   {
@@ -618,38 +618,38 @@ static int8_t SCSI_CheckAddressRange (uint8_t lun , uint32_t blk_offset , uint16
 */
 static int8_t SCSI_ProcessRead (uint8_t lun)
 {
-	uint32_t len;
-	len = MIN(SCSI_blk_len , MSC_MAX_PACKET); 
+  uint32_t len;
+  len = MIN(SCSI_blk_len , MSC_MAX_PACKET); 
 
-	if(SCSI_blk_addr % SCSI_blk_size == 0){
-		if( USBD_STORAGE_fops->Read(lun ,
-									MSC_BOT_Data, 
-									SCSI_blk_addr / SCSI_blk_size, 
-									1) < 0)
-		{
-			
-			SCSI_SenseCode(lun, HARDWARE_ERROR, UNRECOVERED_READ_ERROR);
-			return -1; 
-		}
-	}
+  if(SCSI_blk_addr % SCSI_blk_size == 0)
+  {
+    if( USBD_STORAGE_fops->Read(lun ,
+                                MSC_BOT_Data, 
+                                SCSI_blk_addr / SCSI_blk_size, 
+                                1) < 0)
+    {
+      SCSI_SenseCode(lun, HARDWARE_ERROR, UNRECOVERED_READ_ERROR);
+      return -1; 
+    }
+  }
 
-	DCD_EP_Tx(cdev, 
-			 MSC_IN_EP,
-			 MSC_BOT_Data + SCSI_blk_addr % SCSI_blk_size,
-			 len);
+  DCD_EP_Tx(cdev, 
+            MSC_IN_EP,
+            MSC_BOT_Data + SCSI_blk_addr % SCSI_blk_size,
+            len);
 
 
-	SCSI_blk_addr   += len; 
-	SCSI_blk_len    -= len;  
-
-	/* case 6 : Hi = Di */
-	MSC_BOT_csw.dDataResidue -= len;
-
-	if (SCSI_blk_len == 0)
-	{
-		MSC_BOT_State = BOT_LAST_DATA_IN;
-	}
-	return 0;
+  SCSI_blk_addr   += len; 
+  SCSI_blk_len    -= len;  
+	
+  /* case 6 : Hi = Di */
+  MSC_BOT_csw.dDataResidue -= len;
+  
+  if (SCSI_blk_len == 0)
+  {
+    MSC_BOT_State = BOT_LAST_DATA_IN;
+  }
+  return 0;
 }
 
 /**
@@ -661,41 +661,38 @@ static int8_t SCSI_ProcessRead (uint8_t lun)
 
 static int8_t SCSI_ProcessWrite (uint8_t lun)
 {
-	uint32_t len;
+  uint32_t len;
+  len = MIN(SCSI_blk_len , MSC_MAX_PACKET);
 
-	len = MIN(SCSI_blk_len , MSC_MAX_PACKET); 
+  if((SCSI_blk_addr + len) % SCSI_blk_size == 0 &&
+	  USBD_STORAGE_fops->Write(lun ,
+                              MSC_BOT_Data, 
+                              SCSI_blk_addr / SCSI_blk_size, 
+                              1) < 0)
+  {
+    SCSI_SenseCode(lun, HARDWARE_ERROR, WRITE_FAULT);     
+    return -1; 
+  }
 
-	if((SCSI_blk_addr + len) % SCSI_blk_size == 0){
-		if(USBD_STORAGE_fops->Write(lun ,
-								  MSC_BOT_Data, 
-								  SCSI_blk_addr / SCSI_blk_size, 
-								  1) < 0)
-		{
-			SCSI_SenseCode(lun, HARDWARE_ERROR, WRITE_FAULT);     
-			return -1; 
-		}
-	}
+  SCSI_blk_addr  += len; 
+  SCSI_blk_len   -= len; 
 
-	SCSI_blk_addr  += len; 
-	SCSI_blk_len   -= len; 
+  /* case 12 : Ho = Do */
+  MSC_BOT_csw.dDataResidue -= len;
 
-	/* case 12 : Ho = Do */
-	MSC_BOT_csw.dDataResidue -= len;
-
-	if (SCSI_blk_len == 0)
-	{
-		MSC_BOT_SendCSW (cdev, CSW_CMD_PASSED);
-	}
-	else
-	{
-		/* Prapare EP to Receive next packet */
-		DCD_EP_PrepareRx (cdev,
-						  MSC_OUT_EP,
-						  MSC_BOT_Data + SCSI_blk_addr % SCSI_blk_size, 
-						  MIN (SCSI_blk_len, MSC_MAX_PACKET)); 
-	}
-
-	return 0;
+  if (SCSI_blk_len == 0)
+  {
+    MSC_BOT_SendCSW (cdev, CSW_CMD_PASSED);
+  }
+  else
+  {
+    /* Prapare EP to Receive next packet */
+    DCD_EP_PrepareRx (cdev,
+                      MSC_OUT_EP,
+                      MSC_BOT_Data + SCSI_blk_addr % SCSI_blk_size, 
+                      MIN(SCSI_blk_len, MSC_MAX_PACKET)); 
+  }
+  return 0;
 }
 /**
   * @}

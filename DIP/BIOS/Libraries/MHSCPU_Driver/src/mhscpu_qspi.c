@@ -1090,26 +1090,29 @@ uint8_t FLASH_EraseSector(uint32_t sectorAddress)
 
 /**
   * @brief  Flash Program Interface.
-  * @param  cmdParam:      pointer to a QSPI_CommandTypeDef structure that contains the configuration information. 
-  * @param  DMA_Channelx:  DMA_Channel_0
   * @param  addr:          specifies the address to be programmed.
   * @param  size:          specifies the size to be programmed.
   * @param  buffer:        pointer to the data to be programmed, need word aligned
   * @retval FLASH Status:  The returned value can be: QSPI_STATUS_ERROR, QSPI_STATUS_OK
   */
-uint8_t FLASH_ProgramPage(QSPI_CommandTypeDef *cmdParam, DMA_TypeDef *DMA_Channelx, uint32_t addr, uint32_t size, uint8_t *buffer)
+uint8_t FLASH_ProgramPage(uint32_t addr, uint32_t size, uint8_t *buffer)
 {
     uint8_t ret;
-         
+	QSPI_CommandTypeDef cmdType;
+    
+    cmdType.Instruction = QUAD_INPUT_PAGE_PROG_CMD;
+    cmdType.BusMode = QSPI_BUSMODE_114;	      
+    cmdType.CmdFormat = QSPI_CMDFORMAT_CMD8_ADDR24_PDAT;     
+    
 	__disable_irq();
 	__disable_fault_irq();	
 
-    ret = ROM_QSPI_ProgramPage(cmdParam, DMA_Channelx, addr, size, buffer);
+    ret = ROM_QSPI_ProgramPage(&cmdType, DMA_Channel_1, addr, size, buffer);
     
 	__enable_fault_irq();
 	__enable_irq();
 
-    return ret;    
+    return ret;   
 }
 
 /**

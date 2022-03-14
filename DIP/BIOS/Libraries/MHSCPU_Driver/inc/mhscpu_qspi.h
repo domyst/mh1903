@@ -99,11 +99,8 @@ extern "C"
 
 #define ROM_QSPI_Init                        (*((void (*)(QSPI_InitTypeDef *))(*(uint32_t *)0x8010)))
 #define ROM_QSPI_ReadID                      (*((uint32_t (*)(QSPI_CommandTypeDef *))(*(uint32_t *)0x8014)))
-#define ROM_QSPI_WriteParam                  (*((uint8_t (*)(QSPI_CommandTypeDef *, uint16_t))(*(uint32_t *)0x8018)))
 #define ROM_QSPI_EraseSector                 (*((uint8_t (*)(QSPI_CommandTypeDef *, uint32_t))(*(uint32_t *)0x801C)))
 #define ROM_QSPI_ProgramPage                 (*((uint8_t (*)(QSPI_CommandTypeDef *, DMA_TypeDef *, uint32_t, uint32_t, uint8_t *))(*(uint32_t *)0x8024)))
-#define ROM_QSPI_ReleaseDeepPowerDown        (*((uint8_t (*)(QSPI_CommandTypeDef *))(*(uint32_t *)0x802C)))
-#define ROM_QSPI_StatusReg                   (*((uint16_t (*)(QSPI_CommandTypeDef *))(*(uint32_t *)0x8034)))
 
 
 typedef enum
@@ -192,7 +189,7 @@ void QSPI_Init(QSPI_InitTypeDef *mhqspi);
 void QSPI_SetLatency(uint32_t u32UsClk);
 
 uint8_t FLASH_EraseSector(uint32_t sectorAddress);
-uint8_t FLASH_ProgramPage(QSPI_CommandTypeDef *cmdParam, DMA_TypeDef *DMA_Channelx, uint32_t addr, uint32_t size, uint8_t *buffer);
+uint8_t FLASH_ProgramPage(uint32_t addr, uint32_t size, uint8_t *buffer);
 
 uint32_t QSPI_ReadID(QSPI_CommandTypeDef *cmdParam);
 uint8_t QSPI_WriteParam(QSPI_CommandTypeDef *cmdParam, uint16_t wrData);

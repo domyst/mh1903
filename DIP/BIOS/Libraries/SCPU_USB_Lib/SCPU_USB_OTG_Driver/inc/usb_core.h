@@ -13,12 +13,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-	
+
 /* Include ------------------------------------------------------------------*/
 #include "usb_regs.h"
 #include "usb_conf.h"
-#include "usb_defines.h"	
-	
+#include "usb_defines.h"
+
 /* Exported types -----------------------------------------------------------*/
 /* Exported constants -------------------------------------------------------*/	
 /* Exported macro -----------------------------------------------------------*/	
@@ -126,37 +126,35 @@ USB_OTG_HC , *PUSB_OTG_HC;
 
 typedef struct USB_OTG_ep
 {
-    uint8_t        num;
-    uint8_t        is_in;
-    uint8_t        is_stall;  
-    uint8_t        type;
-    uint8_t        data_pid_start;
-    uint8_t        even_odd_frame;
-    uint16_t       tx_fifo_num;
-    uint32_t       maxpacket;
+    uint8_t  num;
+    uint8_t  is_in;
+    uint8_t  is_stall;
+    uint8_t  type;
+    uint16_t is_fifo_allocated;
+    // uint8_t  data_pid_start;
+    // uint8_t  even_odd_frame;
+    // uint16_t tx_fifo_num;
+    uint16_t maxpacket;
     /* transaction level variables*/
-    uint8_t        *xfer_buff;
-    uint32_t       xfer_len;
-    uint32_t       xfer_count;
-    /* Transfer level variables*/  
-    uint32_t       rem_data_len;
-    uint32_t       total_data_len;
-    uint32_t       ctl_data_len;  
-
-} 
-USB_OTG_EP , *PUSB_OTG_EP;
+    uint8_t* xfer_buff;
+    uint32_t xfer_len;
+    uint32_t xfer_count;
+    /* Transfer level variables*/
+    uint32_t rem_data_len;
+    uint32_t total_data_len;
+    // uint32_t ctl_data_len;
+} USB_OTG_EP, *PUSB_OTG_EP;
 
 typedef struct USB_OTG_core_cfg
 {
-    uint8_t       host_channels;
-    uint8_t       dev_endpoints;
-    uint8_t       speed;
-    uint8_t       coreID;	
-    uint16_t      mps;
-    uint16_t      TotalFifoSize;
-}
-USB_OTG_CORE_CFGS, *PUSB_OTG_CORE_CFGS;
-
+    uint8_t  host_channels;
+    uint8_t  dev_endpoints;
+    uint8_t  speed;
+    uint8_t  coreID;
+    uint16_t mps;
+    uint16_t TotalFifoSize;
+    uint16_t UsedFifoSize;
+} USB_OTG_CORE_CFGS, *PUSB_OTG_CORE_CFGS;
 
 typedef  struct  usb_setup_req
 {
@@ -169,14 +167,14 @@ typedef  struct  usb_setup_req
 
 typedef struct _Device_TypeDef
 {
-    uint8_t  *(*GetDeviceDescriptor)( uint8_t speed , uint16_t *length);  
-    uint8_t  *(*GetLangIDStrDescriptor)( uint8_t speed , uint16_t *length); 
-    uint8_t  *(*GetManufacturerStrDescriptor)( uint8_t speed , uint16_t *length);  
-    uint8_t  *(*GetProductStrDescriptor)( uint8_t speed , uint16_t *length);  
-    uint8_t  *(*GetSerialStrDescriptor)( uint8_t speed , uint16_t *length);  
-    uint8_t  *(*GetConfigurationStrDescriptor)( uint8_t speed , uint16_t *length);  
-    uint8_t  *(*GetInterfaceStrDescriptor)( uint8_t speed , uint16_t *length);   
-    
+    uint8_t* (*GetDeviceDescriptor)(uint8_t speed, uint16_t* length);
+    uint8_t* (*GetLangIDStrDescriptor)(uint8_t speed, uint16_t* length);
+    uint8_t* (*GetManufacturerStrDescriptor)(uint8_t speed, uint16_t* length);
+    uint8_t* (*GetProductStrDescriptor)(uint8_t speed, uint16_t* length);
+    uint8_t* (*GetSerialStrDescriptor)(uint8_t speed, uint16_t* length);
+    uint8_t* (*GetConfigurationStrDescriptor)(uint8_t speed, uint16_t* length);
+    uint8_t* (*GetInterfaceStrDescriptor)(uint8_t speed, uint16_t* length);
+    uint8_t* (*GetQualiferDescriptor)(uint8_t speed, uint16_t* length);
 } USBD_DEVICE, *pUSBD_DEVICE;
 
 typedef struct _Device_cb
@@ -201,7 +199,6 @@ typedef struct _Device_cb
 #endif  
   
 } USBD_Class_cb_TypeDef;
-
 
 typedef struct _USBD_USR_PROP
 {
@@ -232,10 +229,10 @@ typedef struct _DCD
     uint8_t        device_address;
     uint8_t        connection_status;  
     uint8_t        test_mode;
-	USBD_Addr_TypeDef addr_param;	
+    USBD_Addr_TypeDef addr_param;
     uint32_t       DevRemoteWakeup;
-    USB_OTG_EP     in_ep   [USB_OTG_MAX_TX_FIFOS];
-    USB_OTG_EP     out_ep  [USB_OTG_MAX_TX_FIFOS];
+    USB_OTG_EP     in_ep   [USB_OTG_MAX_EP_COUNT];
+    USB_OTG_EP     out_ep  [USB_OTG_MAX_EP_COUNT];
     uint8_t        setup_packet [8*3];
     USBD_Class_cb_TypeDef         *class_cb;
     USBD_Usr_cb_TypeDef           *usr_cb;
@@ -249,12 +246,12 @@ typedef struct _HCD
 {
     uint8_t                  Rx_Buffer [MAX_DATA_LENGTH];  
     __IO uint32_t            ConnSts;
-    __IO uint32_t            ErrCnt[USB_OTG_MAX_TX_FIFOS];
-    __IO uint32_t            XferCnt[USB_OTG_MAX_TX_FIFOS];
-    __IO HC_STATUS           HC_Status[USB_OTG_MAX_TX_FIFOS];  
-    __IO URB_STATE           URB_State[USB_OTG_MAX_TX_FIFOS];
-    USB_OTG_HC               hc [USB_OTG_MAX_TX_FIFOS];
-    uint16_t                 channel [USB_OTG_MAX_TX_FIFOS];
+    __IO uint32_t            ErrCnt[USB_OTG_MAX_EP_COUNT];
+    __IO uint32_t            XferCnt[USB_OTG_MAX_EP_COUNT];
+    __IO HC_STATUS           HC_Status[USB_OTG_MAX_EP_COUNT];  
+    __IO URB_STATE           URB_State[USB_OTG_MAX_EP_COUNT];
+    USB_OTG_HC               hc [USB_OTG_MAX_EP_COUNT];
+    uint16_t                 channel [USB_OTG_MAX_EP_COUNT];
 }
 HCD_DEV , *USB_OTG_USBH_PDEV;
 
@@ -292,8 +289,8 @@ USB_OTG_STS  USB_OTG_DisableGlobalInt(USB_OTG_CORE_HANDLE *pdev);
 void *USB_OTG_ReadPacket(USB_OTG_CORE_HANDLE *pdev, uint8_t *dest, uint8_t ch_ep_num, uint16_t len);
 USB_OTG_STS  USB_OTG_WritePacket(USB_OTG_CORE_HANDLE *pdev, uint8_t *src, uint8_t ch_ep_num, uint16_t len);
 
-USB_OTG_STS  USB_OTG_FlushTxFifo     (USB_OTG_CORE_HANDLE *pdev , uint32_t num);
-USB_OTG_STS  USB_OTG_FlushRxFifo     (USB_OTG_CORE_HANDLE *pdev);
+USB_OTG_STS  USB_OTG_FlushTxFifo     (USB_OTG_CORE_HANDLE *pdev, uint32_t num);
+USB_OTG_STS  USB_OTG_FlushRxFifo     (USB_OTG_CORE_HANDLE *pdev, uint32_t num);
 
 uint8_t      USB_OTG_ReadCoreItr     (USB_OTG_CORE_HANDLE *pdev);
 uint8_t      USB_OTG_ReadOtgItr      (USB_OTG_CORE_HANDLE *pdev);
@@ -344,14 +341,6 @@ void         USB_OTG_StopDevice(USB_OTG_CORE_HANDLE *pdev);
 void         USB_OTG_SetEPStatus (USB_OTG_CORE_HANDLE *pdev , USB_OTG_EP *ep , uint32_t Status);
 uint32_t     USB_OTG_GetEPStatus(USB_OTG_CORE_HANDLE *pdev ,USB_OTG_EP *ep); 
 #endif
-
-/**
-  * @}
-  */ 
-
-/**
-  * @}
-  */ 
 
 #ifdef __cplusplus
 }

@@ -52,6 +52,7 @@ typedef enum
 //macro define
 #define MH_RET_RSA_SUCCESS                  (('R'<<24)|('E'<<16)|('R'<<8)|('S'))
 #define MH_RET_RSA_FAILURE                  (('R'<<24)|('E'<<16)|('R'<<8)|('E'))
+#define MH_RET_RSA_NO_RNG					(('R'<<24)|('E'<<16)|('N'<<8)|('R'))
 
 #define MH_RET_RSA_GKEY_SUCCESS             (('R'<<24)|('G'<<16)|('K'<<8)|('S'))
 #define MH_RET_RSA_GKEY_FAILURE             (('R'<<24)|('G'<<16)|('K'<<8)|('F'))

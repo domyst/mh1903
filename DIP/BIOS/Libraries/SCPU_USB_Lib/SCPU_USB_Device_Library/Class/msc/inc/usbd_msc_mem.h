@@ -13,6 +13,7 @@
 #define __USBD_MEM_H
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_def.h"
+#include "usbd_msc_core.h"
 
 /** @defgroup USBD_MEM
   * @brief header file for the storage disk file

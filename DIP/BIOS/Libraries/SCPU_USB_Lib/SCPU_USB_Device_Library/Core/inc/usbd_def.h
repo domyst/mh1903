@@ -90,6 +90,10 @@ extern "C" {
 
 #define LOBYTE(x)  ((uint8_t)(x & 0x00FF))
 #define HIBYTE(x)  ((uint8_t)((x & 0xFF00) >>8))
+
+#define LSB(n) ((n)&0xff)
+#define MSB(n) (((n)&0xff00) >> 8)
+
 /**
   * @}
   */ 

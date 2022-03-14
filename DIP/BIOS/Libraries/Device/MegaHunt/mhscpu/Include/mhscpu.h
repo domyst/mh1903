@@ -153,7 +153,7 @@ typedef enum IRQn
 //#define __CM3_REV                 0x0201    /*!< Core Revision r2p1                               */
 //#define __CM3_REV                 0x0200    /*!< Core Revision r2p0                               */
 #define __CM4_REV                   0x0001    /*!< Core Revision r2p0                               */
-#define __NVIC_PRIO_BITS          4         /*!< Number of Bits used for Priority Levels          */
+#define __NVIC_PRIO_BITS          3         /*!< Number of Bits used for Priority Levels          */
 #define __Vendor_SysTickConfig    0         /*!< Set to 1 if different SysTick Config is used     */
 #define __MPU_PRESENT             1         /*!< MPU present or not                               */
 /* ToDo: define __FPU_PRESENT if your devise is a CORTEX-M4                                       */
@@ -1135,6 +1135,7 @@ typedef struct
 /* Peripheral and SRAM base address */
 #define MHSCPU_FLASH_BASE                       (0x01000000UL)                /*!< (FLASH     ) Base Address */
 #define MHSCPU_SRAM_BASE                        (0x20000000UL)                /*!< (SRAM      ) Base Address */
+#define MHSCPU_SRAM_SIZE                        (1UL << 20)
 #define MHSCPU_PERIPH_BASE                      (0x40000000UL)                /*!< (Peripheral) Base Address */
 
 #define MHSCPU_EXT_FLASH_BASE                   (0x60000000UL)

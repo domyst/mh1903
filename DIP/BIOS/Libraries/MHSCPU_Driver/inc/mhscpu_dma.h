@@ -185,6 +185,7 @@ void DMA_MultiBlockInit(DMA_TypeDef* DMA_Channelx, DMA_InitTypeDef* DMA_InitStru
 								LLI *first_lli,uint8_t Multi_Block_Mode);
 void DMA_InitLLI(DMA_TypeDef* DMA_Channelx,LLI *lli,LLI *next_lli,
 							void *src_addr,void *dest_addr,uint16_t btsize);
+uint32_t DMA_GetTransferNum(DMA_TypeDef* DMA_Channelx, uint32_t *first_adr);
 
 #ifdef __cplusplus
 }

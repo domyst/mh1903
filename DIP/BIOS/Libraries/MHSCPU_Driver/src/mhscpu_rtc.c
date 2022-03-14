@@ -155,4 +155,19 @@ uint32_t RTC_GetAttrackTime(void)
     return RTC->RTC_ATTA_TIM;
 }
 
+void RTC_CLKSourceSelect(RTCCLK_SOURCE_TypeDef source)
+{
+    assert_param(IS_RTCCLK_SOURCE(source));
+	
+    switch (source)
+    {
+    case SELECT_EXT32K:
+		BPU->SEN_ANA0 |= RTC_32K_EXT_INC_SELECT;
+		break;
+	
+    case SELECT_INC32K:
+		BPU->SEN_ANA0 &= ~RTC_32K_EXT_INC_SELECT;
+		break;
+    }
+}
 /**************************      (C) COPYRIGHT Megahunt    *****END OF FILE****/

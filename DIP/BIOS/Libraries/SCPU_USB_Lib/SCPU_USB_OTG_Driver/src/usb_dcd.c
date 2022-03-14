@@ -10,61 +10,24 @@
 #include "usb_dcd.h"
 #include "usb_bsp.h"
 
-void DCD_Init(USB_OTG_CORE_HANDLE *pdev , 
-              USB_OTG_CORE_ID_TypeDef coreID)
+void DCD_Init(USB_OTG_CORE_HANDLE* pdev, USB_OTG_CORE_ID_TypeDef coreID)
 {
-    uint32_t i;
-    USB_OTG_EP *ep;
     /* Set Register Address */
-    USB_OTG_SelectCore (pdev , coreID);
-    
-//    /* Force_FS */
-//    pdev->regs.COMMREGS->TESTMODE |= BIT5;
-    
-    pdev->dev.device_status = USB_OTG_DEFAULT;
-    pdev->dev.device_address = 0;
-	
-    /* Init ep structure */
-    for (i = 0; i < pdev->cfg.dev_endpoints; i++)
-    {
-        ep = &pdev->dev.in_ep[i];
-        /* Init ep structure */
-        ep->is_in = 1;
-        ep->num = i;
-        ep->tx_fifo_num = i;
-        /* Control until ep is actvated */
-        ep->type = EP_TYPE_CTRL;
-        ep->maxpacket =  USB_OTG_MAX_EP0_SIZE;
-        ep->xfer_buff = 0;
-        ep->xfer_len = 0;
-    }
+    USB_OTG_SelectCore(pdev, coreID);
 
-    for (i = 0; i < pdev->cfg.dev_endpoints; i++)
-    {
-        ep = &pdev->dev.out_ep[i];
-        /* Init ep structure */
-        ep->is_in = 0;
-        ep->num = i;
-        ep->tx_fifo_num = i;
-        /* Control until ep is activated */
-        ep->type = EP_TYPE_CTRL;
-        ep->maxpacket = USB_OTG_MAX_EP0_SIZE;
-        ep->xfer_buff = 0;
-        ep->xfer_len = 0;
-    }
+    pdev->dev.device_status  = USB_OTG_DEFAULT;
+    pdev->dev.device_address = 0;
 
     USB_OTG_DisableGlobalInt(pdev);
 
     /* Init the Core (common init.) */
     USB_OTG_CoreInit(pdev);
 
-
     /* Force Device Mode*/
     USB_OTG_SetCurrentMode(pdev, DEVICE_MODE);
 
     /* Init Device */
     USB_OTG_CoreInitDev(pdev);
-
 
     /* Enable USB Global interrupt */
     USB_OTG_EnableGlobalInt(pdev);
@@ -91,22 +54,23 @@ uint32_t DCD_EP_Open(USB_OTG_CORE_HANDLE *pdev ,
     {
         ep = &pdev->dev.out_ep[ep_addr & 0x7F];
     }
-    ep->num   = ep_addr & 0x7F;
-
-    ep->is_in = (0x80 & ep_addr) != 0;
+    // ep->num = ep_addr & 0x7F;
+    // ep->is_in = (0x80 & ep_addr) != 0;
     ep->maxpacket = ep_mps;
     ep->type = ep_type;
+    /* Never used
     if (ep->is_in)
     {
-        /* Assign a Tx FIFO */
+        // Assign a Tx FIFO
         ep->tx_fifo_num = ep->num;
     }
-    /* Set initial data PID. */
+    // Set initial data PID.
     if (ep_type == USB_OTG_EP_BULK )
     {
         ep->data_pid_start = 0;
     }
-    USB_OTG_EPActivate(pdev , ep );
+    */
+    USB_OTG_EPActivate(pdev, ep);
     return 0;
 }
 
@@ -128,9 +92,9 @@ uint32_t DCD_EP_Close(USB_OTG_CORE_HANDLE *pdev , uint8_t  ep_addr)
     {
         ep = &pdev->dev.out_ep[ep_addr & 0x7F];
     }
-    ep->num   = ep_addr & 0x7F;
-    ep->is_in = (0x80 & ep_addr) != 0;
-    USB_OTG_EPDeactivate(pdev , ep );
+    // ep->num   = ep_addr & 0x7F;
+    // ep->is_in = (0x80 & ep_addr) != 0;
+    USB_OTG_EPDeactivate(pdev , ep);
     return 0;
 }
 
@@ -164,7 +128,7 @@ uint32_t   DCD_EP_PrepareRx( USB_OTG_CORE_HANDLE *pdev,
     }
     else
     {
-        USB_OTG_EPStartXfer(pdev, ep );
+        USB_OTG_EPStartXfer(pdev, ep);
     }
     return 0;
 }
@@ -190,16 +154,21 @@ uint32_t  DCD_EP_Tx ( USB_OTG_CORE_HANDLE *pdev,
     ep->is_in = 1;
     ep->num = ep_addr & 0x7F;  
     ep->xfer_buff = pbuf;
-    ep->xfer_count = 0;
-    ep->xfer_len  = buf_len;
+
+    ep->total_data_len = buf_len;
+    ep->rem_data_len = buf_len;
+    ep->xfer_len  = 0;
+    ep->xfer_count = 1;
 
     if ( ep->num == 0 )
     {
-        USB_OTG_EP0StartXfer(pdev , ep);
+        ep->xfer_count += buf_len / ep->maxpacket + 1;
+        USB_OTG_EP0StartXfer(pdev, ep);
     }
     else
     {
-        USB_OTG_EPStartXfer(pdev, ep );
+        ep->xfer_count += (buf_len + ep->maxpacket - 1) / ep->maxpacket;
+        USB_OTG_EPStartXfer(pdev, ep);
     }
     return 0;
 }
@@ -211,7 +180,7 @@ uint32_t  DCD_EP_Tx ( USB_OTG_CORE_HANDLE *pdev,
 * @retval : status
 */
 
-uint32_t  DCD_EP_Stall (USB_OTG_CORE_HANDLE *pdev, uint8_t   epnum)
+uint32_t  DCD_EP_Stall (USB_OTG_CORE_HANDLE *pdev, uint8_t epnum)
 {
     USB_OTG_EP *ep;
     if ((0x80 & epnum) == 0x80)
@@ -263,7 +232,7 @@ uint32_t  DCD_EP_ClrStall (USB_OTG_CORE_HANDLE *pdev, uint8_t epnum)
 * @param epnum: endpoint address
 * @retval : status
 */
-uint32_t  DCD_EP_Flush (USB_OTG_CORE_HANDLE *pdev , uint8_t epnum)
+uint32_t DCD_EP_Flush(USB_OTG_CORE_HANDLE *pdev, uint8_t epnum)
 {
     if ((epnum & 0x80) == 0x80)
     {
@@ -271,7 +240,7 @@ uint32_t  DCD_EP_Flush (USB_OTG_CORE_HANDLE *pdev , uint8_t epnum)
     }
     else
     {
-        USB_OTG_FlushRxFifo(pdev);
+        USB_OTG_FlushRxFifo(pdev, epnum);
     }
 
     return (0);
@@ -312,13 +281,24 @@ void  DCD_DevConnect (USB_OTG_CORE_HANDLE *pdev)
 * @param pdev: device instance
 * @retval : None
 */
-void  DCD_DevDisconnect (USB_OTG_CORE_HANDLE *pdev)
+void DCD_DevDisconnect(USB_OTG_CORE_HANDLE* pdev)
 {
-    USB_OTG_POWER_TypeDef  power;
-    power.d8 = USB_OTG_READ_REG8(&pdev->regs.COMMREGS->POWER);
-    /* Disconnect device */
-    power.b.soft_conn  = 0;
-    USB_OTG_WRITE_REG8(&pdev->regs.COMMREGS->POWER, power.d8);
+    USB_OTG_POWER_TypeDef power;
+
+    power.d8 = pdev->regs.COMMREGS->POWER;
+
+    // If bus in suspend mode resume bus at first
+    if (pdev->dev.device_status == USB_OTG_SUSPENDED)
+    {
+        power.b.resume             = 1;
+        pdev->regs.COMMREGS->POWER = power.d8;
+        USB_OTG_BSP_mDelay(10);
+    }
+
+    // Software disconnect device
+    power.b.soft_conn = 0;
+
+    pdev->regs.COMMREGS->POWER = power.d8;
     USB_OTG_BSP_mDelay(3);
 }
 

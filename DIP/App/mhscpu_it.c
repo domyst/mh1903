@@ -4,7 +4,7 @@
 #include "mhscpu.h"
 #include "mhscpu_it.h"
 #include "mhscpu_dcmi.h"
-#include "DecodeLib.h"
+//#include "DecodeLib.h"
 #include "ili9488.h"
 #include "uart.h"
 /* Private typedef -----------------------------------------------------------*/
@@ -165,36 +165,37 @@ void UART0_IRQHandler(void)
  */
 void DCMI_IRQHandler(void)
 {  
-	if (DCMI_GetITStatus(DCMI_IT_LINE) != RESET) 
-	{
-		DCMI_ClearITPendingBit(DCMI_IT_LINE); 			  
-	}
+	// if (DCMI_GetITStatus(DCMI_IT_LINE) != RESET) 
+	// {
+	// 	DCMI_ClearITPendingBit(DCMI_IT_LINE); 			  
+	// }
 	
-	if (DCMI_GetITStatus(DCMI_IT_VSYNC) != RESET) 
-	{
-		DCMI_ClearITPendingBit(DCMI_IT_VSYNC);	  
-	}
+	// if (DCMI_GetITStatus(DCMI_IT_VSYNC) != RESET) 
+	// {
+	// 	DCMI_ClearITPendingBit(DCMI_IT_VSYNC);	  
+	// }
 
-	if (DCMI_GetITStatus(DCMI_IT_FRAME) != RESET) 
-	{
-        //���ûص�����
-        DCMI_CallBackFrame();
-		DCMI_ClearITPendingBit(DCMI_IT_FRAME);
-	} 
+	// if (DCMI_GetITStatus(DCMI_IT_FRAME) != RESET) 
+	// {
+    //     //���ûص�����
+    //     DCMI_CallBackFrame();
+	// 	DCMI_ClearITPendingBit(DCMI_IT_FRAME);
+	// } 
 	
-	if (DCMI_GetITStatus(DCMI_IT_OVF) != RESET)
-	{
-		DCMI_ClearITPendingBit(DCMI_IT_OVF); 
-	}
+	// if (DCMI_GetITStatus(DCMI_IT_OVF) != RESET)
+	// {
+	// 	DCMI_ClearITPendingBit(DCMI_IT_OVF); 
+	// }
     
-	if (DCMI_GetITStatus(DCMI_IT_ERR) != RESET) 
-	{
-		DCMI_ClearITPendingBit(DCMI_IT_ERR);
-	}
+	// if (DCMI_GetITStatus(DCMI_IT_ERR) != RESET) 
+	// {
+	// 	DCMI_ClearITPendingBit(DCMI_IT_ERR);
+	// }
 }
 
 void EXTI0_IRQHandler(void)
 {
+	#if 0 // domyst
 	extern uint8_t	button_count;
 	uint8_t	i;
 	uint8_t	chattering_count;
@@ -224,13 +225,14 @@ void EXTI0_IRQHandler(void)
 		}
 
 	}
-
+	#endif
 	
 }
 
 // rear sensor, pc12 external interrupt
 void EXTI2_IRQHandler(void)		// domyst
 {
+	#if 0 // domyst 컴파일 후 원복
 	extern uint8_t	button_count;
 	uint8_t	i;
 	uint8_t	chattering_count;
@@ -258,16 +260,16 @@ void EXTI2_IRQHandler(void)		// domyst
 		//}
 		//EXTI_ClearITPendingBit(EXTI_Line2);
 	}
-	
+	#endif
 }
 
 // EXTI_Line6, PG3, card eject
 void EXTI6_IRQHandler(void)		// domyst
 {
 	extern uint8_t	button_count;
-	uint8_t	i;
-	uint8_t	chattering_count;
-	uint8_t	dummy;
+	//uint8_t	i;
+	//uint8_t	chattering_count;
+	//uint8_t	dummy;
 //	printf("EXTI0_IRQHandler In\r\n");
 //	printf("EXTI0_GPIO_Status %08X\r\n", EXTI_GetITStatus());
 //	printf("EXTI0_GPIO_Status %08X\r\n", EXTI_GetITLineStatus(EXTI_Line0));
@@ -276,7 +278,7 @@ void EXTI6_IRQHandler(void)		// domyst
 	
 	if (EXTI_GetITLineStatus(EXTI_Line6) != RESET)
 	{	
-		E_CmdProc(200);
+		// domyst 컴파일 에러 나중 원복 E_CmdProc(200);
 		//EXTI_ClearITPendingBit(EXTI_Line6);
 	}
 }

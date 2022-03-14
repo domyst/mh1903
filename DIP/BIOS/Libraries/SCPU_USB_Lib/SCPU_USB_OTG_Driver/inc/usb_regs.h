@@ -17,24 +17,33 @@ extern "C" {
 	
 /* Include ------------------------------------------------------------------*/
 #include "mhscpu.h"
+#include "usb_conf.h"
 /* Exported types -----------------------------------------------------------*/
 /* Exported constants -------------------------------------------------------*/	
 /* Exported macro -----------------------------------------------------------*/	
 /* Exported functions -------------------------------------------------------*/	
 /* Exported variables -------------------------------------------------------*/	
 
+#ifndef USB_OTG_MAX_EP_COUNT
+#define USB_OTG_MAX_EP_COUNT 4
+#endif
+
+#ifndef USB_OTG_MAX_FIFO_SIZE
+#define USB_OTG_MAX_FIFO_SIZE (512)
+#endif
+
 #define USB_OTG_FS_BASE_ADDR                                USB_BASE 
-#define NUM_EP_FIFO                                         8
+#define NUM_EP_FIFO                                         USB_OTG_MAX_EP_COUNT
 #define NUM_DMA_CHANNEL                                     1
 #define NUM_HOSTRQPK                                        1 
-    
+
 #define USB_OTG_COMMON_GLOBAL_REG_OFFSET                    0x000
 #define USB_OTG_INDEXED_CSR_REG_OFFSET                      0x010
 #define USB_OTG_EP_FIFO_GLOBAL_REG_OFFSET                   0x020
 #define USB_OTG_EP_FIFO_REG_OFFSET                          0x004
 #define USB_OTG_DYNFIFO_REG_OFFSET                          0x060
 #define USB_OTG_ULPI_REG_OFFSET                             0x070
-#define USB_OTG_TADDR_GLOBAL_REG_OFFSET                     0x080                
+#define USB_OTG_TADDR_GLOBAL_REG_OFFSET                     0x080
 #define USB_OTG_TADDR_REG_OFFSET                            0x008
 #define USB_OTG_EP_CSR_GLOBAL_REG_OFFSET                    0x100
 #define USB_OTG_EP_CSR_REG_OFFSET                           0x010
@@ -43,10 +52,8 @@ extern "C" {
 #define USB_OTG_EXTENED_REG_OFFSET                          0x300
 #define USB_OTG_LPM_REG_OFFSET                              0x360
 
-#define USB_OTG_MAX_TX_FIFOS                 8
-
 #define USB_OTG_HS_MAX_PACKET_SIZE           512
-#define USB_OTG_FS_MAX_PACKET_SIZE           128
+#define USB_OTG_FS_MAX_PACKET_SIZE           64
 #define USB_OTG_MAX_EP0_SIZE                 64
 
 /* USB OTG DMA Burst Mode Select
@@ -1657,11 +1664,11 @@ typedef union _USB_OTG_LPM_FADDR_TypeDef
 } USB_OTG_LPM_FADDR_TypeDef;
 
 /**
-  * 结构说明：调试控制寄存器(USBPHY_CR1)结构
-  * 偏移地址：0x0108 
-  * 初 始 值：0x004921AE
-  * 属    性：RW
-  * 宽    度：32bit
+  * USBPHY_CR1_TypeDef
+  * Offset: 0x0108 
+  * Default: 0x004921AE
+  * Access: RW
+  * Width: 32bit
   */
 typedef union _USBPHY_CR1_TypeDef
 {
@@ -1690,18 +1697,18 @@ typedef union _USBPHY_CR1_TypeDef
 } USBPHY_CR1_TypeDef;
 
 /**
-  * 结构说明：调试控制寄存器(USBPHY_CR3)结构
-  * 偏移地址：0x010C
-  * 初 始 值：0x00000000
-  * 属    性：RW
-  * 宽    度：32bit
+  * USBPHY_CR3_TypeDef
+  * Offset: 0x010C
+  * Default: 0x00000000
+  * Access: RW
+  * Width: 32bit
   */
 typedef union _USBPHY_CR3_TypeDef
 {
     uint32_t d32;
     struct{
-        uint32_t idpullup	                : 1;    /* 用于操作 USB PHY的idpullup，启动PHY探测ID状态 */
-        uint32_t iddig                      : 1;    /* PHY 输出的ID状态信号，用于软件查询 */
+        uint32_t idpullup	                : 1;    // USB PHY ID Pin pull up, set to enable ID detection
+        uint32_t iddig                      : 1;    // USB PHY ID Status
         uint32_t reserved2_31               : 29;
     } b;
 } USBPHY_CR3_TypeDef;

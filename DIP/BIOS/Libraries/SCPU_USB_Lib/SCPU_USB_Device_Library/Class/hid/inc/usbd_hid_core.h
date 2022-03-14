@@ -14,16 +14,10 @@
   
 /** @defgroup USBD_HID_Exported_Defines
   * @{
-  */
-#ifdef HID_SUPPORT_IN_OUT    
-#define USB_HID_CONFIG_DESC_SIZ       41
-#define HID_MOUSE_REPORT_DESC_SIZE    27
-#else
+  */ 
+#define USB_HID_DESC_SIZ              9
 #define USB_HID_CONFIG_DESC_SIZ       34
 #define HID_MOUSE_REPORT_DESC_SIZE    74
-#endif
-#define USB_HID_DESC_SIZ              9
-
 
 #define HID_DESCRIPTOR_TYPE           0x21
 #define HID_REPORT_DESC               0x22

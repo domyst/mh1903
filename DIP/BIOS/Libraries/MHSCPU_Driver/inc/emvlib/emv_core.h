@@ -60,6 +60,7 @@ struct emv_core
     int           terminal_vcc;/*voltage, by mV*/
     int           terminal_auto;/*auto-send GET RESPONSE Command for T = 0*/
     int           terminal_pps;
+    int           terminal_enforce_pps;
     int           terminal_spec;
     
     int           terminal_conv;/*conversion logical : 0 - direction; 1 - reverse direction*/
@@ -94,7 +95,7 @@ struct emv_core
     
     unsigned char emv_card_ipcb;
     unsigned char emv_card_pcb;
-    
+    unsigned char terminal_enforce_pps_param;
 };
 
 /*the ATR data structure*/

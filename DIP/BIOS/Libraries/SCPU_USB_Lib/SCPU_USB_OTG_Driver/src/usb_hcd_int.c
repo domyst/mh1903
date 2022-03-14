@@ -127,16 +127,23 @@ uint32_t USBH_OTG_ISR_Handler (USB_OTG_CORE_HANDLE *pdev, USBH_HOST *phost)
         USB_OTG_WRITE_REG8(&pdev->regs.DYNFIFOREGS->DEVCTL, devctl.d8);
         /* Reset USB */
         USB_OTG_WRITE_REG8(&pdev->regs.COMMREGS->FADDR, 0x00);
-        retval |= USB_OTG_USBH_handle_Disconnect_ISR (pdev);  
+        retval |= USB_OTG_USBH_handle_Disconnect_ISR(pdev);
         devctl.b.session = 1;
         USB_OTG_WRITE_REG8(&pdev->regs.DYNFIFOREGS->DEVCTL, devctl.d8); 
     }
-	/* VBus Error interrupt */
+    /* VBus Error interrupt */
     if (intr_usb.b.VBus_error)
     {
-		devctl.b.session = 1;
+        devctl.b.session = 1;
         USB_OTG_WRITE_REG8(&pdev->regs.DYNFIFOREGS->DEVCTL, devctl.d8); 
         USB_OTG_USBH_handle_VBusError_ISR (pdev);
+    }
+    /* Reset/Babble interrupt */
+    if (intr_usb.b.reset_babble)
+    {
+        devctl.b.session = 1;
+        USB_OTG_WRITE_REG8(&pdev->regs.DYNFIFOREGS->DEVCTL, devctl.d8);
+        USB_OTG_USBH_handle_Babble_ISR (pdev);
     }
     /* Check if HOST Mode */
     if (USB_OTG_IsHostMode(pdev))
@@ -156,11 +163,6 @@ uint32_t USBH_OTG_ISR_Handler (USB_OTG_CORE_HANDLE *pdev, USBH_HOST *phost)
         {
             USB_OTG_USBH_Resume_ISR (pdev);
         }
-        /* Reset/Babble interrupt */
-        if (intr_usb.b.reset_babble)
-        {
-            USB_OTG_USBH_handle_Babble_ISR (pdev);
-        }
         /* SOF interrupt */
         if (intr_usb.b.sof)
         {
@@ -169,7 +171,7 @@ uint32_t USBH_OTG_ISR_Handler (USB_OTG_CORE_HANDLE *pdev, USBH_HOST *phost)
         /* Connect interrupt */
         if (intr_usb.b.conn)
         {
-			devctl.b.session = 1;
+            devctl.b.session = 1;
             USB_OTG_WRITE_REG8(&pdev->regs.DYNFIFOREGS->DEVCTL, devctl.d8);
             retval |= USB_OTG_USBH_handle_Connect_ISR (pdev);  
         }

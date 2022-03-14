@@ -33,27 +33,24 @@ typedef struct
 
 
 #define NVIC_VectTab_RAM             ((uint32_t)0x20000000)
-#define NVIC_VectTab_FLASH           ((uint32_t)0x10001000)
+#define NVIC_VectTab_FLASH           ((uint32_t)0x01000000)
 #define IS_NVIC_VECTTAB(VECTTAB) (((VECTTAB) == NVIC_VectTab_RAM) || \
                                   ((VECTTAB) == NVIC_VectTab_FLASH))
 
 
 #define NVIC_PriorityGroup_0         ((uint32_t)0x07) /*!< 0 bits for pre-emption priority
-                                                            4 bits for subpriority */
-#define NVIC_PriorityGroup_1         ((uint32_t)0x06) /*!< 1 bits for pre-emption priority
                                                             3 bits for subpriority */
-#define NVIC_PriorityGroup_2         ((uint32_t)0x05) /*!< 2 bits for pre-emption priority
+#define NVIC_PriorityGroup_1         ((uint32_t)0x06) /*!< 1 bits for pre-emption priority
                                                             2 bits for subpriority */
-#define NVIC_PriorityGroup_3         ((uint32_t)0x04) /*!< 3 bits for pre-emption priority
+#define NVIC_PriorityGroup_2         ((uint32_t)0x05) /*!< 2 bits for pre-emption priority
                                                             1 bits for subpriority */
-#define NVIC_PriorityGroup_4         ((uint32_t)0x03) /*!< 4 bits for pre-emption priority
+#define NVIC_PriorityGroup_3         ((uint32_t)0x04) /*!< 3 bits for pre-emption priority
                                                             0 bits for subpriority */
 
 #define IS_NVIC_PRIORITY_GROUP(GROUP) (((GROUP) == NVIC_PriorityGroup_0) || \
                                        ((GROUP) == NVIC_PriorityGroup_1) || \
                                        ((GROUP) == NVIC_PriorityGroup_2) || \
-                                       ((GROUP) == NVIC_PriorityGroup_3) || \
-                                       ((GROUP) == NVIC_PriorityGroup_4))
+                                       ((GROUP) == NVIC_PriorityGroup_3))
 
 #define IS_NVIC_PREEMPTION_PRIORITY(PRIORITY)  ((PRIORITY) < 0x10)
 

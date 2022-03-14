@@ -70,6 +70,7 @@ uint32_t TIM_GetAllITStatus(TIM_Module_TypeDef* TIMMx);
 ITStatus TIM_GetRawITStatus(TIM_Module_TypeDef* TIMMx, TIM_NumTypeDef TIMx);
 uint32_t TIM_GetAllRawITStatus(TIM_Module_TypeDef* TIMMx);
 
+uint32_t TIM_GetCounter(TIM_Module_TypeDef *TIMMx, TIM_NumTypeDef TIMx);
 
 #ifdef __cplusplus
 }

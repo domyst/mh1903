@@ -38,18 +38,18 @@ extern "C" {
 
 typedef struct _USBD_DCD_INT
 {
-	uint8_t (* DataOutStage) (USB_OTG_CORE_HANDLE *pdev , uint8_t epnum);
-	uint8_t (* DataInStage)  (USB_OTG_CORE_HANDLE *pdev , uint8_t epnum);
-	uint8_t (* SetupStage) (USB_OTG_CORE_HANDLE *pdev);
-	uint8_t (* SOF) (USB_OTG_CORE_HANDLE *pdev);
-	uint8_t (* Reset) (USB_OTG_CORE_HANDLE *pdev);
-	uint8_t (* Suspend) (USB_OTG_CORE_HANDLE *pdev);
-	uint8_t (* Resume) (USB_OTG_CORE_HANDLE *pdev);
-	uint8_t (* IsoINIncomplete) (USB_OTG_CORE_HANDLE *pdev);
-	uint8_t (* IsoOUTIncomplete) (USB_OTG_CORE_HANDLE *pdev);  
+    uint8_t (* DataOutStage) (USB_OTG_CORE_HANDLE *pdev , uint8_t epnum);
+    uint8_t (* DataInStage)  (USB_OTG_CORE_HANDLE *pdev , uint8_t epnum);
+    uint8_t (* SetupStage) (USB_OTG_CORE_HANDLE *pdev);
+    uint8_t (* SOF) (USB_OTG_CORE_HANDLE *pdev);
+    uint8_t (* Reset) (USB_OTG_CORE_HANDLE *pdev);
+    uint8_t (* Suspend) (USB_OTG_CORE_HANDLE *pdev);
+    uint8_t (* Resume) (USB_OTG_CORE_HANDLE *pdev);
+    uint8_t (* IsoINIncomplete) (USB_OTG_CORE_HANDLE *pdev);
+    uint8_t (* IsoOUTIncomplete) (USB_OTG_CORE_HANDLE *pdev);  
 
-	uint8_t (* DevConnected) (USB_OTG_CORE_HANDLE *pdev);
-	uint8_t (* DevDisconnected) (USB_OTG_CORE_HANDLE *pdev);   
+    uint8_t (* DevConnected) (USB_OTG_CORE_HANDLE *pdev);
+    uint8_t (* DevDisconnected) (USB_OTG_CORE_HANDLE *pdev);   
 }USBD_DCD_INT_cb_TypeDef;
 
 extern USBD_DCD_INT_cb_TypeDef *USBD_DCD_INT_fops;
@@ -62,14 +62,14 @@ extern USBD_DCD_INT_cb_TypeDef *USBD_DCD_INT_fops;
   */ 
 //#define CLEAR_IN_EP_INTR(epnum,intr)
 #define CLEAR_IN_EP_INTR(epnum,intr) \
-	txcsrl.d8=0; \
-	txcsrl.b.intr = 0; \
-	USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[epnum]->TXCSRL,txcsrl.d8);
+    txcsrl.d8=0; \
+    txcsrl.b.intr = 0; \
+    USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[epnum]->TXCSRL,txcsrl.d8);
 
 #define CLEAR_OUT_EP_INTR(epnum,intr) \
-	rxcsrl.d8=0; \
-	rxcsrl.b.intr = 0; \
-	USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[epnum]->RXCSRL,rxcsrl.d8);
+    rxcsrl.d8=0; \
+    rxcsrl.b.intr = 0; \
+    USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[epnum]->RXCSRL,rxcsrl.d8);
 
 /**
   * @}

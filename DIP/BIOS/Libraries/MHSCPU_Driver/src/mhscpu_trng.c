@@ -117,9 +117,7 @@ ITStatus TRNG_GetITStatus(uint32_t TRNG_IT)
   * @brief  清除中断标志位
   * @param  TRNG_IT:
   *         TRNG_IT_RNG0_S128
-  *         TRNG_IT_RNG1_S128
   *         TRNG_IT_RNG0_ATTACK
-  *         TRNG_IT_RNG1_ATTACK
   * @retval None
   */
 void TRNG_ClearITPendingBit(uint32_t TRNG_IT)

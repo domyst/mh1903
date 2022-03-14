@@ -93,6 +93,7 @@ int32_t ADC_GetResult(void);
 int32_t ADC_GetFIFOResult(uint16_t *ADCdata, uint32_t len);
 uint32_t ADC_CalVoltage(uint32_t u32ADC_Value, uint32_t u32ADC_Ref_Value);
 void ADC_BuffCmd(FunctionalState NewState);
+void ADC_ChannelSwitch(ADC_ChxTypeDef Channelx);
 
 /* Exported variables -------------------------------------------------------*/
     

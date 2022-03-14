@@ -315,7 +315,7 @@
               <OCR_RVCT4>
                 <Type>1</Type>
                 <StartAddress>0x1001000</StartAddress>
-                <Size>0x400000</Size>
+                <Size>0x80000</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -438,74 +438,9 @@
               <FilePath>..\..\App\mhscpu_it.c</FilePath>
             </File>
             <File>
-              <FileName>xpt2046.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\xpt2046.c</FilePath>
-            </File>
-            <File>
-              <FileName>ILI9488.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\ILI9488.c</FilePath>
-            </File>
-            <File>
-              <FileName>picture.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\picture.c</FilePath>
-            </File>
-            <File>
-              <FileName>fonts.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\fonts.c</FilePath>
-            </File>
-            <File>
-              <FileName>beep.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\beep.c</FilePath>
-            </File>
-            <File>
-              <FileName>calibration.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\calibration.c</FilePath>
-            </File>
-            <File>
-              <FileName>fnd.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\fnd.c</FilePath>
-            </File>
-            <File>
-              <FileName>DecodeDemo.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\DecodeDemo.c</FilePath>
-            </File>
-            <File>
-              <FileName>test_emv.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\test_emv.c</FilePath>
-            </File>
-            <File>
-              <FileName>test_loopback.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\test_loopback.c</FilePath>
-            </File>
-            <File>
-              <FileName>rtc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\rtc.c</FilePath>
-            </File>
-            <File>
-              <FileName>sound.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\sound.c</FilePath>
-            </File>
-            <File>
               <FileName>uart.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\App\uart.c</FilePath>
-            </File>
-            <File>
-              <FileName>sam.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\sam.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -528,11 +463,6 @@
               <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\misc.c</FilePath>
             </File>
             <File>
-              <FileName>mhscpu_dcmi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\mhscpu_dcmi.c</FilePath>
-            </File>
-            <File>
               <FileName>mhscpu_dma.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\mhscpu_dma.c</FilePath>
@@ -553,11 +483,6 @@
               <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\mhscpu_spi.c</FilePath>
             </File>
             <File>
-              <FileName>mhscpu_lcdi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\mhscpu_lcdi.c</FilePath>
-            </File>
-            <File>
               <FileName>mhscpu_uart.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\mhscpu_uart.c</FilePath>
@@ -576,26 +501,6 @@
               <FileName>mhscpu_timer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\mhscpu_timer.c</FilePath>
-            </File>
-            <File>
-              <FileName>mhscpu_emv_hard.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\mhscpu_emv_hard.c</FilePath>
-            </File>
-            <File>
-              <FileName>mhscpu_dac.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\mhscpu_dac.c</FilePath>
-            </File>
-            <File>
-              <FileName>mhscpu_bpk.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\mhscpu_bpk.c</FilePath>
-            </File>
-            <File>
-              <FileName>mhscpu_rtc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\mhscpu_rtc.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -621,16 +526,6 @@
               <FileName>mh1903_emv.lib</FileName>
               <FileType>4</FileType>
               <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\lib\mh1903_emv.lib</FilePath>
-            </File>
-            <File>
-              <FileName>MH1903_QRDecode.lib</FileName>
-              <FileType>4</FileType>
-              <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\lib\QR_normal\MH1903_QRDecode.lib</FilePath>
-            </File>
-            <File>
-              <FileName>MH1903_GetCreditCardNum.lib</FileName>
-              <FileType>4</FileType>
-              <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\lib\MH1903_GetCreditCardNum.lib</FilePath>
             </File>
           </Files>
         </Group>
@@ -1068,74 +963,9 @@
               <FilePath>..\..\App\mhscpu_it.c</FilePath>
             </File>
             <File>
-              <FileName>xpt2046.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\xpt2046.c</FilePath>
-            </File>
-            <File>
-              <FileName>ILI9488.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\ILI9488.c</FilePath>
-            </File>
-            <File>
-              <FileName>picture.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\picture.c</FilePath>
-            </File>
-            <File>
-              <FileName>fonts.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\fonts.c</FilePath>
-            </File>
-            <File>
-              <FileName>beep.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\beep.c</FilePath>
-            </File>
-            <File>
-              <FileName>calibration.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\calibration.c</FilePath>
-            </File>
-            <File>
-              <FileName>fnd.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\fnd.c</FilePath>
-            </File>
-            <File>
-              <FileName>DecodeDemo.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\DecodeDemo.c</FilePath>
-            </File>
-            <File>
-              <FileName>test_emv.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\test_emv.c</FilePath>
-            </File>
-            <File>
-              <FileName>test_loopback.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\test_loopback.c</FilePath>
-            </File>
-            <File>
-              <FileName>rtc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\rtc.c</FilePath>
-            </File>
-            <File>
-              <FileName>sound.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\sound.c</FilePath>
-            </File>
-            <File>
               <FileName>uart.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\App\uart.c</FilePath>
-            </File>
-            <File>
-              <FileName>sam.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\App\sam.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1158,11 +988,6 @@
               <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\misc.c</FilePath>
             </File>
             <File>
-              <FileName>mhscpu_dcmi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\mhscpu_dcmi.c</FilePath>
-            </File>
-            <File>
               <FileName>mhscpu_dma.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\mhscpu_dma.c</FilePath>
@@ -1183,11 +1008,6 @@
               <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\mhscpu_spi.c</FilePath>
             </File>
             <File>
-              <FileName>mhscpu_lcdi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\mhscpu_lcdi.c</FilePath>
-            </File>
-            <File>
               <FileName>mhscpu_uart.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\mhscpu_uart.c</FilePath>
@@ -1206,26 +1026,6 @@
               <FileName>mhscpu_timer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\mhscpu_timer.c</FilePath>
-            </File>
-            <File>
-              <FileName>mhscpu_emv_hard.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\mhscpu_emv_hard.c</FilePath>
-            </File>
-            <File>
-              <FileName>mhscpu_dac.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\mhscpu_dac.c</FilePath>
-            </File>
-            <File>
-              <FileName>mhscpu_bpk.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\mhscpu_bpk.c</FilePath>
-            </File>
-            <File>
-              <FileName>mhscpu_rtc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\src\mhscpu_rtc.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1251,16 +1051,6 @@
               <FileName>mh1903_emv.lib</FileName>
               <FileType>4</FileType>
               <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\lib\mh1903_emv.lib</FilePath>
-            </File>
-            <File>
-              <FileName>MH1903_QRDecode.lib</FileName>
-              <FileType>4</FileType>
-              <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\lib\QR_normal\MH1903_QRDecode.lib</FilePath>
-            </File>
-            <File>
-              <FileName>MH1903_GetCreditCardNum.lib</FileName>
-              <FileType>4</FileType>
-              <FilePath>..\..\BIOS\Libraries\MHSCPU_Driver\lib\MH1903_GetCreditCardNum.lib</FilePath>
             </File>
           </Files>
         </Group>

@@ -84,6 +84,7 @@
 * @param  fifosiz : Set Fifo size
 * @retval None
 */
+#ifdef USE_DEVICE_MODE
 static uint8_t USB_OTG_FifosizeReg(uint16_t fifosiz)
 {
     uint8_t register_value = 0;
@@ -117,6 +118,7 @@ static uint8_t USB_OTG_FifosizeReg(uint16_t fifosiz)
     }
     return register_value;
 }
+#endif
 
 /**
 * @brief  USB_OTG_FifoStartAddr
@@ -124,12 +126,12 @@ static uint8_t USB_OTG_FifosizeReg(uint16_t fifosiz)
 * @param  RxFifosize : Rx fifo size; TxFifosize: Tx fifo size
 * @retval None
 */
-static uint16_t USB_OTG_FifoStartAddr(uint32_t RxFifosize, uint32_t TxFifosize)
-{
-    uint16_t uint16_start_addr = 0; 
-    uint16_start_addr = ((RxFifosize > TxFifosize) ?  RxFifosize : TxFifosize) >> 3;
-    return uint16_start_addr;
-}
+//static uint16_t USB_OTG_FifoStartAddr(uint32_t RxFifosize, uint32_t TxFifosize)
+//{
+//    uint16_t uint16_start_addr = 0; 
+//    uint16_start_addr = ((RxFifosize > TxFifosize) ?  RxFifosize : TxFifosize) >> 3;
+//    return uint16_start_addr;
+//}
 
 /**
 * @brief  USB_OTG_InitDevSpeed :Initializes the DevSpd field of DCFG register 
@@ -148,6 +150,7 @@ void USB_OTG_InitDevSpeed(USB_OTG_CORE_HANDLE *pdev , uint8_t speed)
 * @param  pdev : Selected device
 * @retval None
 */
+/*
 static void USB_OTG_EpFifoConfiguration(USB_OTG_CORE_HANDLE *pdev,
                                         uint8_t ep_num, 
                                         uint32_t Trx_fifo_startaddr, 
@@ -161,27 +164,24 @@ static void USB_OTG_EpFifoConfiguration(USB_OTG_CORE_HANDLE *pdev,
     txcsrl.b.flush_fifo = 1;
     rxcsrl.b.flush_fifo = 1;
     USB_OTG_WRITE_REG8(&pdev->regs.COMMREGS->INDEX, ep_num);
-    
-#ifdef USE_DEVICE_MODE
-    /* set Rx FIFO size */
+
+    // set Rx FIFO size
     USB_OTG_WRITE_REG16(&pdev->regs.CSRREGS[ep_num]->RXMAXP, pdev->dev.out_ep[ep_num].maxpacket);
     USB_OTG_WRITE_REG16(&pdev->regs.DYNFIFOREGS->RXFIFOADD,  \
                         Trx_fifo_startaddr >> 3);
     USB_OTG_WRITE_REG8(&pdev->regs.DYNFIFOREGS->RXFIFOSZ,USB_OTG_FifosizeReg(rx_fifo_size));
-    /* Flush the FIFOs */
+    // Flush the FIFOs
     USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[ep_num]->RXCSRL, rxcsrl.d8);
-    /* set Tx FIFO size */
+    // set Tx FIFO size
     USB_OTG_WRITE_REG16(&pdev->regs.CSRREGS[ep_num]->TXMAXP, pdev->dev.in_ep[ep_num].maxpacket);
-	USB_OTG_WRITE_REG16(&pdev->regs.DYNFIFOREGS->TXFIFOADD,  \
+    USB_OTG_WRITE_REG16(&pdev->regs.DYNFIFOREGS->TXFIFOADD,  \
                         (Trx_fifo_startaddr + rx_fifo_size) >> 3);
     USB_OTG_WRITE_REG8(&pdev->regs.DYNFIFOREGS->TXFIFOSZ,USB_OTG_FifosizeReg(tx_fifo_size));
-    /* Flush the FIFOs */
+    // Flush the FIFOs
     USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[ep_num]->TXCSRL, txcsrl.d8);
-#endif
-#ifdef USE_HOST_MODE
 
-#endif
 }
+*/
 
 /**
 * @brief  USB_OTG_EnableCommonInt
@@ -201,9 +201,9 @@ static void USB_OTG_EnableCommonInt(USB_OTG_CORE_HANDLE *pdev)
   
     USB_OTG_WRITE_REG8( &pdev->regs.COMMREGS->INTRUSBE, intr_usbe.d8);
     /* Enable Epn_Rx interrupr(n = 1,2,3,4,5,6,7) */
-    USB_OTG_WRITE_REG16( &pdev->regs.COMMREGS->INTRRXE, 0xFE);
+    USB_OTG_WRITE_REG16( &pdev->regs.COMMREGS->INTRRXE, 0x00);
     /* Enable Epn_Tx interrupr(n = 0,1,2,3,4,5,6,7) */
-    USB_OTG_WRITE_REG16( &pdev->regs.COMMREGS->INTRTXE, 0xFF);
+    USB_OTG_WRITE_REG16( &pdev->regs.COMMREGS->INTRTXE, 0x00);
 }
 
 /**
@@ -211,26 +211,26 @@ static void USB_OTG_EnableCommonInt(USB_OTG_CORE_HANDLE *pdev)
 * @param  pdev : Selected device
 * @retval USB_OTG_STS : status
 */
-static USB_OTG_STS USB_OTG_CoreReset(USB_OTG_CORE_HANDLE *pdev)
-{
-    USB_OTG_STS status = USB_OTG_OK;
-    __IO USB_OTG_POWER_TypeDef  power;
+//static USB_OTG_STS USB_OTG_CoreReset(USB_OTG_CORE_HANDLE *pdev)
+//{
+//    USB_OTG_STS status = USB_OTG_OK;
+//    __IO USB_OTG_POWER_TypeDef  power;
 
-    power.d8 = USB_OTG_READ_REG8(&pdev->regs.COMMREGS->POWER);
-    /* Core Soft Reset */
-    power.b.en_suspendM = 1;
-    power.b.reset = 1;
-    USB_OTG_WRITE_REG8(&pdev->regs.COMMREGS->POWER, power.d8);
-    /* The CPU should keep the Reset bit set for at least 20 ms to ensure correct 
-     * resetting of the target device.
-     */
-    USB_OTG_BSP_mDelay(25);
-    power.b.reset = 0;
-    USB_OTG_WRITE_REG8(&pdev->regs.COMMREGS->POWER, power.d8);
-    /* Wait for 3 PHY Clocks*/
-    USB_OTG_BSP_uDelay(3);
-    return status;
-}
+//    power.d8 = USB_OTG_READ_REG8(&pdev->regs.COMMREGS->POWER);
+//    /* Core Soft Reset */
+//    power.b.en_suspendM = 1;
+//    power.b.reset = 1;
+//    USB_OTG_WRITE_REG8(&pdev->regs.COMMREGS->POWER, power.d8);
+//    /* The CPU should keep the Reset bit set for at least 20 ms to ensure correct 
+//     * resetting of the target device.
+//     */
+//    USB_OTG_BSP_mDelay(25);
+//    power.b.reset = 0;
+//    USB_OTG_WRITE_REG8(&pdev->regs.COMMREGS->POWER, power.d8);
+//    /* Wait for 3 PHY Clocks*/
+//    USB_OTG_BSP_uDelay(3);
+//    return status;
+//}
 
 /**
 * @brief  USB_OTG_WritePacket : Writes a packet into the Tx FIFO associated 
@@ -248,13 +248,13 @@ USB_OTG_STS USB_OTG_WritePacket(USB_OTG_CORE_HANDLE *pdev,
 {
     USB_OTG_STS status = USB_OTG_OK;
     uint32_t i= 0;
-	
+
 #ifdef USE_DEVICE_MODE
 	for (i = 0; i < len; i++)
 	{
-		if ((int)src >= (MHSCPU_SRAM_BASE+SRAM_SIZE) || (int)src < MHSCPU_SRAM_BASE)
+		if ((int)src >= (MHSCPU_SRAM_BASE + MHSCPU_SRAM_SIZE) || (int)src < MHSCPU_SRAM_BASE)
 		{
-			while(1);
+            while (1) {}
 		}
 		pdev->regs.FIFO[ch_ep_num]->byte = *src++;
 	}
@@ -288,12 +288,10 @@ void *USB_OTG_ReadPacket(USB_OTG_CORE_HANDLE *pdev,
     {
         *data_buff = pdev->regs.FIFO[ch_ep_num]->word;
     }
-	
-    for (i = count32b*4; i < len; i++)
+    for (i = count32b * 4; i < len; i++)
     {
         dest[i] = pdev->regs.FIFO[ch_ep_num]->byte;
     }	
-
     /* Return the buffer pointer because if the transfer is composed of several
      packets, the data of the next packet must be stored following the 
      previous packet's data */
@@ -315,16 +313,17 @@ USB_OTG_STS USB_OTG_SelectCore(USB_OTG_CORE_HANDLE *pdev,
 
     /* at startup the core is in FS mode */
     pdev->cfg.speed = USB_OTG_SPEED_FULL;
-    pdev->cfg.mps = USB_OTG_FS_MAX_PACKET_SIZE ;    
+    pdev->cfg.mps = USB_OTG_FS_MAX_PACKET_SIZE;
   
     /* initialize device cfg following its address */
     if (coreID == USB_OTG_FS_CORE_ID)
     {
-        baseAddress                = USB_OTG_FS_BASE_ADDR;
-        pdev->cfg.coreID           = USB_OTG_FS_CORE_ID;
-        pdev->cfg.host_channels    = 8 ;
-        pdev->cfg.dev_endpoints    = 4 ;
-        pdev->cfg.TotalFifoSize    = 512; /* in 8-bits */
+        baseAddress             = USB_OTG_FS_BASE_ADDR;
+        pdev->cfg.coreID        = USB_OTG_FS_CORE_ID;
+        pdev->cfg.host_channels = USB_OTG_MAX_EP_COUNT;
+        pdev->cfg.dev_endpoints = USB_OTG_MAX_EP_COUNT;
+        pdev->cfg.TotalFifoSize = USB_OTG_MAX_FIFO_SIZE; /* in 8-bits */
+        pdev->cfg.UsedFifoSize  = 0;
     }
   
     /* Common USB Registers */
@@ -375,7 +374,7 @@ USB_OTG_STS USB_OTG_SelectCore(USB_OTG_CORE_HANDLE *pdev,
 * @param  pdev : Selected device
 * @retval USB_OTG_STS : status
 */
-USB_OTG_STS USB_OTG_CoreInit(USB_OTG_CORE_HANDLE *pdev)
+USB_OTG_STS USB_OTG_CoreInit(USB_OTG_CORE_HANDLE* pdev)
 {
     return USB_OTG_OK;
 }
@@ -409,23 +408,48 @@ USB_OTG_STS USB_OTG_DisableGlobalInt(USB_OTG_CORE_HANDLE *pdev)
 }
 
 /**
-* @brief  USB_OTG_FlushTxFifo : Flush a Tx FIFO
-* @param  pdev : Selected device
-* @param  num : FO num
-* @retval USB_OTG_STS : status
-*/
-USB_OTG_STS USB_OTG_FlushTxFifo (USB_OTG_CORE_HANDLE *pdev , uint32_t num )
+ * @brief  USB_OTG_FlushTxFifo : Flush a Tx FIFO
+ * @param  pdev : Selected device
+ * @param  num : FO num
+ * @retval USB_OTG_STS : status
+ */
+USB_OTG_STS USB_OTG_FlushTxFifo(USB_OTG_CORE_HANDLE* pdev, uint32_t num)
 {
     USB_OTG_STS status = USB_OTG_OK;
-    USB_OTG_TXCSRL_IN_HOST_TypeDef txcsrl;
-	
-    txcsrl.d8 = USB_OTG_READ_REG8(&pdev->regs.INDEXREGS->CSRL.TXCSRL);
-    if (txcsrl.b.tx_pkt_rdy)
+
+    USB_OTG_TXCSRL_IN_HOST_TypeDef      txcsrl;
+    USB_OTG_CSR0H_IN_PERIPHERAL_TypeDef csr0h;
+    USB_OTG_CSR0L_IN_PERIPHERAL_TypeDef csr0l;
+
+    if (num == 0)
+    {
+        csr0l.d8 = USB_OTG_READ_REG8(&pdev->regs.INDEXREGS->CSRL.CSR0L);
+        if (!csr0l.b.rx_pkt_rdy && !csr0l.b.tx_pkt_rdy)
+            return status;
+ 
+        // FlushFIFO should only be used when TxPktRdy/RxPktRdy is set.
+        // The FIFO pointer is reset and the TxPktRdy/RxPktRdy bit (below) is cleared
+        csr0h.d8 = USB_OTG_READ_REG8(&pdev->regs.INDEXREGS->CSRH.CSR0H);
+        csr0h.b.flush_fifo = 1;
+
+        USB_OTG_WRITE_REG8(&pdev->regs.INDEXREGS->CSRH.CSR0H, csr0h.d8);
+    }
+    else
+    {
+        txcsrl.d8 = USB_OTG_READ_REG8(&pdev->regs.CSRREGS[num]->TXCSRL);
+        if (!txcsrl.b.tx_pkt_rdy)
+            return status;
+
+        // FlushFIFO should only be used when RxPktRdy is set.
+        // The FIFO pointer is reset, the TxPktRdy bit is cleared and an interrupt is generated
         txcsrl.b.flush_fifo = 1;
-    USB_OTG_WRITE_REG8( &pdev->regs.INDEXREGS->CSRL.TXCSRL, txcsrl.d8 );
+        txcsrl.b.tx_pkt_rdy = 0;
+        USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[num]->TXCSRL, txcsrl.d8);
+    }
+
     /* Wait for 3 PHY Clocks*/
     USB_OTG_BSP_uDelay(3);
-	
+
     return status;
 }
 
@@ -434,18 +458,28 @@ USB_OTG_STS USB_OTG_FlushTxFifo (USB_OTG_CORE_HANDLE *pdev , uint32_t num )
 * @param  pdev : Selected device
 * @retval USB_OTG_STS : status
 */
-USB_OTG_STS USB_OTG_FlushRxFifo( USB_OTG_CORE_HANDLE *pdev )
+USB_OTG_STS USB_OTG_FlushRxFifo(USB_OTG_CORE_HANDLE *pdev, uint32_t num)
 {
     USB_OTG_STS status = USB_OTG_OK;
     USB_OTG_RXCSRL_IN_HOST_TypeDef rxcsrl;
-	
-    rxcsrl.d8 = USB_OTG_READ_REG8(&pdev->regs.INDEXREGS->RXCSRL);
-    if (rxcsrl.b.rx_pkt_rdy)
-        rxcsrl.b.flush_fifo = 1;
-    USB_OTG_WRITE_REG8( &pdev->regs.INDEXREGS->RXCSRL, rxcsrl.d8 );
+
+    if(!num) {
+        return status;
+    }
+
+    rxcsrl.d8 = USB_OTG_READ_REG8(&pdev->regs.CSRREGS[num]->RXCSRL);
+    if (!rxcsrl.b.rx_pkt_rdy)
+        return status;
+
+    // FlushFIFO should only be used when RxPktRdy is set.
+    // The FIFO pointer is reset and the RxPktRdy bit is cleared.
+    rxcsrl.b.flush_fifo = 1;
+    rxcsrl.b.rx_pkt_rdy = 0;
+    USB_OTG_WRITE_REG8( &pdev->regs.CSRREGS[num]->RXCSRL, rxcsrl.d8);
+
     /* Wait for 3 PHY Clocks*/
     USB_OTG_BSP_uDelay(3);
-	
+
     return status;
 }
 
@@ -466,6 +500,7 @@ USB_OTG_STS USB_OTG_SetCurrentMode(USB_OTG_CORE_HANDLE *pdev , uint8_t mode)
     
     if ( mode == HOST_MODE)
     {
+        // power.b.HS_enab = 1;
         power.b.en_suspendM = 1;
         USB_OTG_WRITE_REG8(&pdev->regs.COMMREGS->POWER, power.d8);
         devctl.b.host_mode = 1;
@@ -478,16 +513,13 @@ USB_OTG_STS USB_OTG_SetCurrentMode(USB_OTG_CORE_HANDLE *pdev , uint8_t mode)
         power.b.en_suspendM = 1;
         devctl.b.session = 0;
         power.b.soft_conn = 1;
+        // power.b.HS_enab = 1;
         USB_OTG_WRITE_REG8(&pdev->regs.DYNFIFOREGS->DEVCTL, devctl.d8);
         USB_OTG_WRITE_REG8(&pdev->regs.COMMREGS->POWER, power.d8);
-#ifdef USE_DEVICE_MODE
-        pdev->dev.out_ep[0].xfer_buff = pdev->dev.setup_packet;
-        pdev->dev.out_ep[0].xfer_len = 8;
-#endif
     }
-	
+
     USB_OTG_BSP_mDelay(50);
-	
+
     return status;
 }
 
@@ -581,7 +613,6 @@ USB_OTG_STS USB_OTG_CoreInitHost(USB_OTG_CORE_HANDLE *pdev)
 	pdev->regs.DYNFIFOREGS->RXFIFOSZ = 3; // 64
 	pdev->regs.DYNFIFOREGS->RXFIFOADD = 32;
 	pdev->regs.COMMREGS->INDEX = 0;
-
     if (pdev->cfg.coreID == USB_OTG_FS_CORE_ID  )
     {  
 //		/* Set Full speed phy */
@@ -757,16 +788,17 @@ uint8_t USB_OTG_ReadHostAllChannels_intr (USB_OTG_CORE_HANDLE *pdev)
 uint32_t USB_OTG_ResetPort(USB_OTG_CORE_HANDLE *pdev)
 {
     USB_OTG_POWER_TypeDef power;
-	
+
     power.d8 = USB_OTG_READ_REG8(&pdev->regs.COMMREGS->POWER);
     power.b.en_suspendM = 1;
     power.b.reset = 1;
     USB_OTG_WRITE_REG8(&pdev->regs.COMMREGS->POWER, power.d8);
-    USB_OTG_BSP_mDelay(20);
+    USB_OTG_BSP_mDelay(100);
     power.b.en_suspendM = 1;
     power.b.reset = 0;
     USB_OTG_WRITE_REG8(&pdev->regs.COMMREGS->POWER, power.d8);
-	
+    USB_OTG_BSP_mDelay(200);
+
     return 1;
 }
 
@@ -1174,75 +1206,15 @@ void USB_OTG_StopHost(USB_OTG_CORE_HANDLE *pdev)
 * @param  pdev : Selected device
 * @retval USB_OTG_STS : status
 */
-USB_OTG_STS USB_OTG_CoreInitDev (USB_OTG_CORE_HANDLE *pdev)
+USB_OTG_STS USB_OTG_CoreInitDev(USB_OTG_CORE_HANDLE* pdev)
 {
-    USB_OTG_STS  status = USB_OTG_OK;
-    uint32_t Trx_fifo_startaddr = 0;
+    USB_OTG_STS status = USB_OTG_OK;
 
-    if (pdev->cfg.coreID == USB_OTG_FS_CORE_ID  )
-    {  
+    if (pdev->cfg.coreID == USB_OTG_FS_CORE_ID)
+    {
         /* Set Full speed phy */
-        USB_OTG_InitDevSpeed (pdev , USB_OTG_SPEED_PARAM_FULL);
-        /* FIFO total size = 512 bytes */
-        /* EP0 */
-        USB_OTG_WRITE_REG8(&pdev->regs.COMMREGS->INDEX, 0);
-        /* set Rx FIFO size */
-        USB_OTG_WRITE_REG16(&pdev->regs.DYNFIFOREGS->RXFIFOADD, 0);
-        USB_OTG_WRITE_REG8(&pdev->regs.DYNFIFOREGS->RXFIFOSZ,USB_OTG_FifosizeReg(RX0_FIFO_FS_SIZE));
-        /* set Tx FIFO size */
-        USB_OTG_WRITE_REG16(&pdev->regs.DYNFIFOREGS->TXFIFOADD,0);
-        USB_OTG_WRITE_REG8(&pdev->regs.DYNFIFOREGS->TXFIFOSZ,USB_OTG_FifosizeReg(TX0_FIFO_FS_SIZE));
-        /* EP1 */
-        Trx_fifo_startaddr = ((RX0_FIFO_FS_SIZE > TX0_FIFO_FS_SIZE) ?  RX0_FIFO_FS_SIZE : TX0_FIFO_FS_SIZE);
-        USB_OTG_EpFifoConfiguration(pdev,
-                                    1,
-                                    Trx_fifo_startaddr,
-                                    RX1_FIFO_FS_SIZE,
-                                    TX1_FIFO_FS_SIZE);
-        /* EP2 */
-        Trx_fifo_startaddr += RX1_FIFO_FS_SIZE + TX1_FIFO_FS_SIZE;
-        USB_OTG_EpFifoConfiguration(pdev,
-                                    2,
-                                    Trx_fifo_startaddr,
-                                    RX2_FIFO_FS_SIZE,
-                                    TX2_FIFO_FS_SIZE);
-        
-        /* EP3 */ 
-        Trx_fifo_startaddr += RX2_FIFO_FS_SIZE + TX2_FIFO_FS_SIZE;
-        USB_OTG_EpFifoConfiguration(pdev,
-                                    3,
-                                    Trx_fifo_startaddr,
-                                    RX3_FIFO_FS_SIZE,
-                                    TX3_FIFO_FS_SIZE);
-        /* EP4 */ 
-        Trx_fifo_startaddr += RX3_FIFO_FS_SIZE + TX3_FIFO_FS_SIZE;
-        USB_OTG_EpFifoConfiguration(pdev,
-                                    4,
-                                    Trx_fifo_startaddr,
-                                    RX4_FIFO_FS_SIZE,
-                                    TX4_FIFO_FS_SIZE);
-        /* EP5 */ 
-        Trx_fifo_startaddr += RX4_FIFO_FS_SIZE + TX4_FIFO_FS_SIZE;
-        USB_OTG_EpFifoConfiguration(pdev,
-                                    5,
-                                    Trx_fifo_startaddr,
-                                    RX5_FIFO_FS_SIZE,
-                                    TX5_FIFO_FS_SIZE);
-        /* EP6 */ 
-        Trx_fifo_startaddr += RX5_FIFO_FS_SIZE + TX5_FIFO_FS_SIZE;
-        USB_OTG_EpFifoConfiguration(pdev,
-                                    6,
-                                    Trx_fifo_startaddr,
-                                    RX6_FIFO_FS_SIZE,
-                                    TX6_FIFO_FS_SIZE);
-        /* EP7 */ 
-        Trx_fifo_startaddr += RX6_FIFO_FS_SIZE + TX6_FIFO_FS_SIZE;
-        USB_OTG_EpFifoConfiguration(pdev,
-                                    7,
-                                    Trx_fifo_startaddr,
-                                    RX7_FIFO_FS_SIZE,
-                                    TX7_FIFO_FS_SIZE);
-    }  
+        USB_OTG_InitDevSpeed(pdev, USB_OTG_SPEED_PARAM_FULL);
+    }
     /* Clear all pending Device Interrupts */
     USB_OTG_READ_REG8(&pdev->regs.COMMREGS->INTRUSB);
     USB_OTG_WRITE_REG8(&pdev->regs.COMMREGS->INTRUSBE, 0x00);
@@ -1312,25 +1284,56 @@ USB_OTG_STS  USB_OTG_EP0Activate(USB_OTG_CORE_HANDLE *pdev)
 * @param  pdev : Selected device
 * @retval USB_OTG_STS : status
 */
-USB_OTG_STS USB_OTG_EPActivate(USB_OTG_CORE_HANDLE *pdev , USB_OTG_EP *ep)
+USB_OTG_STS USB_OTG_EPActivate(USB_OTG_CORE_HANDLE* pdev, USB_OTG_EP* ep)
 {
-    USB_OTG_STS status = USB_OTG_OK;
+    USB_OTG_STS             status = USB_OTG_OK;
     USB_OTG_INTRRXE_TypeDef intr_rxe;
     USB_OTG_INTRTXE_TypeDef intr_txe;
-//    __IO uint16_t *addr;
-    /* Read DEPCTLn register */
-    if (ep->is_in == 1)
+
+    // Setup the fifo addr and size of endpoint
+    if (!ep->is_fifo_allocated)
     {
-//        addr = &pdev->regs.COMMREGS->INTRTXE;
+        if (ep->num)
+        {
+            // assert if the UsedFifoSize overflow
+            assert_param((pdev->cfg.UsedFifoSize + ep->maxpacket) <= pdev->cfg.TotalFifoSize);
+
+            USB_OTG_WRITE_REG8(&pdev->regs.COMMREGS->INDEX, ep->num);
+            if (ep->is_in)
+            {
+                USB_OTG_WRITE_REG16(&pdev->regs.INDEXREGS->TXMAXP, ep->maxpacket);
+                USB_OTG_WRITE_REG16(&pdev->regs.DYNFIFOREGS->TXFIFOADD, pdev->cfg.UsedFifoSize >> 3);
+                USB_OTG_WRITE_REG8(&pdev->regs.DYNFIFOREGS->TXFIFOSZ, USB_OTG_FifosizeReg(ep->maxpacket));
+            }
+            else
+            {
+                USB_OTG_WRITE_REG16(&pdev->regs.INDEXREGS->RXMAXP, ep->maxpacket);
+                USB_OTG_WRITE_REG16(&pdev->regs.DYNFIFOREGS->RXFIFOADD, pdev->cfg.UsedFifoSize >> 3);
+                USB_OTG_WRITE_REG8(&pdev->regs.DYNFIFOREGS->RXFIFOSZ, USB_OTG_FifosizeReg(ep->maxpacket));
+            }
+            pdev->cfg.UsedFifoSize += ep->maxpacket;
+            USB_OTG_WRITE_REG8(&pdev->regs.COMMREGS->INDEX, 0);
+        }
+        else
+        {
+            // Reset EP0 UsedFifoSize to default fix value 64
+            pdev->cfg.UsedFifoSize = 64;
+        }
+
+        ep->is_fifo_allocated = 1;
+    }
+
+    if (ep->is_in)
+    {
         intr_txe.d16 = 1 << ep->num;
         USB_OTG_MODIFY_REG16(&pdev->regs.COMMREGS->INTRTXE, 0, intr_txe.d16);
     }
-    else
+    else if(ep->num)
     {
-//        addr = &pdev->regs.COMMREGS->INTRRXE;
         intr_rxe.d16 = 1 << ep->num;
-        USB_OTG_MODIFY_REG16(&pdev->regs.COMMREGS->INTRTXE, 0, intr_rxe.d16);
-    }  
+        USB_OTG_MODIFY_REG16(&pdev->regs.COMMREGS->INTRRXE, 0, intr_rxe.d16);
+    }
+
     return status;
 }
 
@@ -1339,123 +1342,82 @@ USB_OTG_STS USB_OTG_EPActivate(USB_OTG_CORE_HANDLE *pdev , USB_OTG_EP *ep)
 * @param  pdev : Selected device
 * @retval USB_OTG_STS : status
 */
-USB_OTG_STS USB_OTG_EPDeactivate(USB_OTG_CORE_HANDLE *pdev , USB_OTG_EP *ep)
+USB_OTG_STS USB_OTG_EPDeactivate(USB_OTG_CORE_HANDLE* pdev, USB_OTG_EP* ep)
 {
     USB_OTG_STS status = USB_OTG_OK;
+
     USB_OTG_INTRRXE_TypeDef intr_rxe;
     USB_OTG_INTRTXE_TypeDef intr_txe;
-//    __IO uint16_t *addr;
-    /* Read DEPCTLn register */
     if (ep->is_in == 1)
     {
-//        addr = &pdev->regs.COMMREGS->INTRTXE;
         intr_txe.d16 = 1 << ep->num;
         USB_OTG_MODIFY_REG16(&pdev->regs.COMMREGS->INTRTXE, intr_txe.d16, 0);
     }
     else
     {
-//        addr = &pdev->regs.COMMREGS->INTRRXE;
         intr_rxe.d16 = 1 << ep->num;
-        USB_OTG_MODIFY_REG16(&pdev->regs.COMMREGS->INTRTXE, intr_rxe.d16, 0);
-    }  
+        USB_OTG_MODIFY_REG16(&pdev->regs.COMMREGS->INTRRXE, intr_rxe.d16, 0);
+    }
     return status;
 }
 
 /**
-* @brief  USB_OTG_EPStartXfer : Handle the setup for data xfer for an EP and 
-*         starts the xfer
-* @param  pdev : Selected device
-* @retval USB_OTG_STS : status
-*/
-USB_OTG_STS USB_OTG_EPStartXfer(USB_OTG_CORE_HANDLE *pdev , USB_OTG_EP *ep)
+ * @brief  USB_OTG_EPStartXfer : Handle the setup for data xfer for an EP and
+ *         starts the xfer
+ * @param  pdev : Selected device
+ * @retval USB_OTG_STS : status
+ */
+USB_OTG_STS USB_OTG_EPStartXfer(USB_OTG_CORE_HANDLE* pdev, USB_OTG_EP* ep)
 {
-    USB_OTG_STS status = USB_OTG_OK;
+    USB_OTG_STS                          status = USB_OTG_OK;
     USB_OTG_TXCSRL_IN_PERIPHERAL_TypeDef tx_csrl;
     USB_OTG_RXCSRL_IN_PERIPHERAL_TypeDef rx_csrl;
-    USB_OTG_RXCOUNT_TypeDef  rx_count;
+    USB_OTG_RXCOUNT_TypeDef              rx_count;
 
     /* IN endpoint */
-    if (ep->is_in == 1)
+    if (ep->is_in)
     {
-		tx_csrl.d8 = USB_OTG_READ_REG8(&pdev->regs.CSRREGS[ep->num]->TXCSRL);
-		ep->rem_data_len = ep->xfer_len - ep->xfer_count;
-		/* Zero Length Packet? */
-		if (ep->rem_data_len == 0)
-		{
-			USB_OTG_WritePacket(pdev, 
-								ep->xfer_buff + ep->xfer_count, 
-								ep->num, 
-								0);
-			ep->xfer_count = ep->xfer_len;
-			ep->rem_data_len = 0; 
-			tx_csrl.b.tx_pkt_rdy = 1;
-			USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[ep->num]->TXCSRL,tx_csrl.d8);
-		}
-		else
-		{
-			if (ep->rem_data_len > ep->maxpacket)
-			{
-				USB_OTG_WritePacket(pdev, 
-									ep->xfer_buff + ep->xfer_count, 
-									ep->num, 
-									ep->maxpacket); 
-				ep->xfer_count += ep->maxpacket;
-				if (ep->xfer_len >= ep->xfer_count)
-				{
-					ep->rem_data_len = ep->xfer_len - ep->xfer_count;
-				}     
-				else     
-				{
-					ep->rem_data_len = 0;
-					ep->xfer_count = ep->xfer_len;
-				}                    
-				tx_csrl.b.tx_pkt_rdy = 1;
-				USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[ep->num]->TXCSRL,tx_csrl.d8);
-			}
-			else
-			{
-				USB_OTG_WritePacket(pdev, 
-									ep->xfer_buff + ep->xfer_count, 
-									ep->num, 
-									ep->rem_data_len); 
-				ep->xfer_count = ep->xfer_len; 
-				ep->rem_data_len = 0;                
-				tx_csrl.b.tx_pkt_rdy = 1;
-				USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[ep->num]->TXCSRL,tx_csrl.d8);
-			}
-		}
+        ep->xfer_len = MIN(ep->rem_data_len, ep->maxpacket);
+        if (ep->xfer_len)
+        {
+            USB_OTG_WritePacket(pdev, ep->xfer_buff + ep->total_data_len - ep->rem_data_len, ep->num, ep->xfer_len);
+            ep->rem_data_len -= ep->xfer_len;
+        }
+        if (ep->xfer_count)
+            ep->xfer_count--;
+
+        tx_csrl.d8           = USB_OTG_READ_REG8(&pdev->regs.CSRREGS[ep->num]->TXCSRL);
+        tx_csrl.b.tx_pkt_rdy = 1;
+        USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[ep->num]->TXCSRL, tx_csrl.d8);
     }
     else
     {
         /* OUT endpoint */
-		rx_csrl.d8 = USB_OTG_READ_REG8(&pdev->regs.CSRREGS[ep->num]->RXCSRL);
-		if (ep->xfer_len == 0)
-		{
-			ep->rem_data_len = 0;
-			ep->xfer_count = ep->xfer_len;
-			rx_csrl.b.rx_pkt_rdy = 0;
-			USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[ep->num]->RXCSRL,rx_csrl.d8);
-		}
-		else
-		{
-			rx_count.d16 = USB_OTG_READ_REG16(&pdev->regs.CSRREGS[ep->num]->RXCOUNT);
-			USB_OTG_ReadPacket(pdev, 
-							   ep->xfer_buff + ep->xfer_count, 
-							   ep->num, 
-							   rx_count.d16);
-			ep->xfer_count += rx_count.d16;
-			if (ep->xfer_len >= ep->xfer_count)
-			{
-				ep->rem_data_len = ep->xfer_len - ep->xfer_count;
-			}
-			else
-			{
-				ep->rem_data_len = 0;
-				ep->xfer_count = ep->xfer_len;
-			}
-			rx_csrl.b.rx_pkt_rdy = 0;
-			USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[ep->num]->RXCSRL,rx_csrl.d8);
-		}
+        rx_csrl.d8 = USB_OTG_READ_REG8(&pdev->regs.CSRREGS[ep->num]->RXCSRL);
+        if (ep->xfer_len == 0)
+        {
+            ep->rem_data_len     = 0;
+            ep->xfer_count       = ep->xfer_len;
+            rx_csrl.b.rx_pkt_rdy = 0;
+            USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[ep->num]->RXCSRL, rx_csrl.d8);
+        }
+        else
+        {
+            rx_count.d16 = USB_OTG_READ_REG16(&pdev->regs.CSRREGS[ep->num]->RXCOUNT);
+            USB_OTG_ReadPacket(pdev, ep->xfer_buff + ep->xfer_count, ep->num, rx_count.d16);
+            ep->xfer_count += rx_count.d16;
+            if (ep->xfer_len >= ep->xfer_count)
+            {
+                ep->rem_data_len = ep->xfer_len - ep->xfer_count;
+            }
+            else
+            {
+                ep->rem_data_len = 0;
+                ep->xfer_count   = ep->xfer_len;
+            }
+            rx_csrl.b.rx_pkt_rdy = 0;
+            USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[ep->num]->RXCSRL, rx_csrl.d8);
+        }
     }
     return status;
 }
@@ -1466,83 +1428,29 @@ USB_OTG_STS USB_OTG_EPStartXfer(USB_OTG_CORE_HANDLE *pdev , USB_OTG_EP *ep)
 * @param  pdev : Selected device
 * @retval USB_OTG_STS : status
 */
-USB_OTG_STS USB_OTG_EP0StartXfer(USB_OTG_CORE_HANDLE *pdev , USB_OTG_EP *ep)
+USB_OTG_STS USB_OTG_EP0StartXfer(USB_OTG_CORE_HANDLE* pdev, USB_OTG_EP* ep)
 {
-    USB_OTG_STS                 status = USB_OTG_OK;
     USB_OTG_CSR0L_IN_PERIPHERAL_TypeDef csr0l;
-
-    csr0l.d8 = USB_OTG_READ_REG8(&pdev->regs.INDEXREGS->CSRL.CSR0L);
     /* IN endpoint */
-    if (ep->is_in == 1)
+    if (ep->is_in && ep->xfer_count)
     {
-        ep->rem_data_len = ep->xfer_len - ep->xfer_count;
-        /* Zero Length Packet? */
-        if (ep->rem_data_len == 0)
+        ep->xfer_len = MIN(ep->rem_data_len, ep->maxpacket);
+        if (ep->xfer_len)
         {
-            USB_OTG_WritePacket(pdev, 
-                                ep->xfer_buff, 
-                                0, 
-                                ep->xfer_len);
-            ep->xfer_count = ep->xfer_len;
-            ep->rem_data_len = 0;
-            csr0l.b.tx_pkt_rdy = 1;
-
-			if (USB_OTG_EP0_STATUS_IN != pdev->dev.device_state)
-			{
-				csr0l.b.data_end = 1;
-			}
-
-            USB_OTG_WRITE_REG8(&pdev->regs.INDEXREGS->CSRL.CSR0L,csr0l.d8);
+            USB_OTG_WritePacket(pdev, ep->xfer_buff + ep->total_data_len - ep->rem_data_len, 0, ep->xfer_len);
+            ep->rem_data_len -= ep->xfer_len;
         }
-        else
-        {
-            if (ep->rem_data_len > ep->maxpacket)
-            {
-                USB_OTG_WritePacket(pdev, 
-                                    ep->xfer_buff + ep->xfer_count, 
-                                    0, 
-                                    ep->maxpacket); 
-                ep->xfer_count += ep->maxpacket;
-                ep->rem_data_len = ep->xfer_len - ep->xfer_count;
-                csr0l.b.tx_pkt_rdy = 1;
-                USB_OTG_WRITE_REG8(&pdev->regs.INDEXREGS->CSRL.CSR0L,csr0l.d8);
-            }
-            else
-            {
-                USB_OTG_WritePacket(pdev, 
-                                    ep->xfer_buff + ep->xfer_count, 
-                                    0, 
-                                    ep->rem_data_len);  
-                ep->xfer_count = ep->xfer_len;    
-                ep->rem_data_len = 0;                
-                csr0l.b.tx_pkt_rdy = 1;
-                csr0l.b.data_end = 1;
-                USB_OTG_WRITE_REG8(&pdev->regs.INDEXREGS->CSRL.CSR0L,csr0l.d8);
-            }
-        }
+        if (ep->xfer_count)
+            ep->xfer_count--;
 
-		/* Enable the Tx FIFO Empty Interrupt for this EP */
-		if (ep->xfer_len > 0)
-		{
-		}
+        csr0l.d8 = USB_OTG_READ_REG8(&pdev->regs.INDEXREGS->CSRL.CSR0L);
+        if (ep->xfer_count == 0)
+            csr0l.b.data_end = 1;
+        csr0l.b.tx_pkt_rdy = 1;
+        USB_OTG_WRITE_REG8(&pdev->regs.INDEXREGS->CSRL.CSR0L, csr0l.d8);
     }
-    else
-    {
-        /* Program the transfer size and packet count as follows:
-        * xfersize = N * (maxpacket + 4 - (maxpacket % 4))
-        * pktcnt = N           */
-        if (ep->xfer_len == 0)
-        {
-
-        }
-        else
-        {
-
-        }
-    }
-    return status;
+    return USB_OTG_OK;
 }
-
 
 /**
 * @brief  USB_OTG_EPSetStall : Set the EP STALL
@@ -1612,14 +1520,14 @@ USB_OTG_STS USB_OTG_EPClearStall(USB_OTG_CORE_HANDLE *pdev , USB_OTG_EP *ep)
         {
             txcsrl.d8 = USB_OTG_READ_REG8(&pdev->regs.CSRREGS[ep->num]->TXCSRL);
             /* set the stall bit */
-            txcsrl.b.sent_stall = 1;
+            txcsrl.b.sent_stall = 0;
             USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[ep->num]->TXCSRL, txcsrl.d8);
         }
         else
         {
             csr0l.d8 = USB_OTG_READ_REG8(&pdev->regs.INDEXREGS->CSRL.CSR0L);
             /* set the stall bit */
-            csr0l.b.sent_stall = 1;
+            csr0l.b.sent_stall = 0;
             USB_OTG_WRITE_REG8(&pdev->regs.INDEXREGS->CSRL.CSR0L, csr0l.d8);
         }
     }
@@ -1629,14 +1537,14 @@ USB_OTG_STS USB_OTG_EPClearStall(USB_OTG_CORE_HANDLE *pdev , USB_OTG_EP *ep)
         {
             rxcsrl.d8 = USB_OTG_READ_REG8(&pdev->regs.CSRREGS[ep->num]->RXCSRL);
             /* set the stall bit */
-            rxcsrl.b.sent_stall = 1;
+            rxcsrl.b.sent_stall = 0;
             USB_OTG_WRITE_REG8(&pdev->regs.CSRREGS[ep->num]->RXCSRL, rxcsrl.d8);
         }
         else
         {
             csr0l.d8 = USB_OTG_READ_REG8(&pdev->regs.INDEXREGS->CSRL.CSR0L);
             /* set the stall bit */
-            csr0l.b.sent_stall = 1;
+            csr0l.b.sent_stall = 0;
             USB_OTG_WRITE_REG8(&pdev->regs.INDEXREGS->CSRL.CSR0L, csr0l.d8);
         }
     }
@@ -1694,27 +1602,29 @@ void USB_OTG_EP0_OutStart(USB_OTG_CORE_HANDLE *pdev)
 }
 
 /**
-* @brief  USB_OTG_RemoteWakeup : active remote wakeup signalling
-* @param  None
-* @retval : None
-*/
-void USB_OTG_ActiveRemoteWakeup(USB_OTG_CORE_HANDLE *pdev)
+ * @brief  USB_OTG_RemoteWakeup : active remote wakeup signalling
+ * @param  None
+ * @retval : None
+ */
+void USB_OTG_ActiveRemoteWakeup(USB_OTG_CORE_HANDLE* pdev)
 {
     USB_OTG_POWER_TypeDef power;
-    /* Note: If CLK has been stopped,it will need be restarted before 
-     * this write can occur. 
+    /* Note: If CLK has been stopped,it will need be restarted before
+     * this write can occur.
      */
-    power.d8 = USB_OTG_READ_REG8(&pdev->regs.COMMREGS->POWER); 
-    power.b.resume = 1;
-    USB_OTG_WRITE_REG8(&pdev->regs.COMMREGS->POWER, power.d8);
-    /* The software should leave then this bit set for approximately 10ms
-     * (minimum of 2ms, a maximum of 15ms) before resetting it to 0.    
-     */
-    USB_OTG_BSP_mDelay(10);
-    power.b.resume = 0;
-    USB_OTG_WRITE_REG8(&pdev->regs.COMMREGS->POWER, power.d8);
+    if (pdev->dev.DevRemoteWakeup)
+    {
+        power.d8       = USB_OTG_READ_REG8(&pdev->regs.COMMREGS->POWER);
+        power.b.resume = 1;
+        USB_OTG_WRITE_REG8(&pdev->regs.COMMREGS->POWER, power.d8);
+        /* The software should leave then this bit set for approximately 10ms
+         * (minimum of 2ms, a maximum of 15ms) before resetting it to 0.
+         */
+        USB_OTG_BSP_mDelay(10);
+        power.b.resume = 0;
+        USB_OTG_WRITE_REG8(&pdev->regs.COMMREGS->POWER, power.d8);
+    }
 }
-
 
 /**
 * @brief  USB_OTG_UngateClock : active USB Core clock
@@ -1762,7 +1672,7 @@ uint32_t USB_OTG_GetEPStatus(USB_OTG_CORE_HANDLE *pdev ,USB_OTG_EP *ep)
         else if (txcsrl.b.under_run == 1 || txcsrl.b.tx_pkt_rdy == 1)
             Status = USB_OTG_EP_TX_NAK;
         else 
-            Status = USB_OTG_EP_TX_VALID;     
+            Status = USB_OTG_EP_TX_VALID;
     }
     else
     {
@@ -1814,7 +1724,7 @@ void USB_OTG_SetEPStatus (USB_OTG_CORE_HANDLE *pdev , USB_OTG_EP *ep , uint32_t 
         {
             if ((txcsrl.b.sent_stall == 1) || (txcsrl.b.send_stall == 1))
             {  
-                ep->even_odd_frame = 0;
+                // ep->even_odd_frame = 0;
                 USB_OTG_EPClearStall(pdev, ep);
                 return;
             }      
@@ -1845,7 +1755,7 @@ void USB_OTG_SetEPStatus (USB_OTG_CORE_HANDLE *pdev , USB_OTG_EP *ep , uint32_t 
         {
             if ((rxcsrl.b.send_stall == 1) || (rxcsrl.b.sent_stall == 1))
             {  
-                ep->even_odd_frame = 0;
+                // ep->even_odd_frame = 0;
                 USB_OTG_EPClearStall(pdev, ep);
                 return;
             }  

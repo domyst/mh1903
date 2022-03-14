@@ -81,7 +81,8 @@ extern "C" {
 #define HPRT0_PRTSPD_FULL_SPEED                2
 #define HPRT0_PRTSPD_LOW_SPEED                 3
 
-#define  MIN(a, b)      (((a) < (b)) ? (a) : (b))
+#define MIN(a, b)      (((a) < (b)) ? (a) : (b))
+#define MAX(a, b)      (((a) > (b)) ? (a) : (b))
 /**
   * @}
   */

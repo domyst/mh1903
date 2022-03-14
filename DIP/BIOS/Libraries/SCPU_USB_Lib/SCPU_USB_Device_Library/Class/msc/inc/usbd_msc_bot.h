@@ -10,6 +10,7 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
 
 #include "usbd_core.h"
+#include "usbd_msc_core.h"
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __USBD_MSC_BOT_H

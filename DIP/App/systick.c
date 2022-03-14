@@ -11,13 +11,19 @@ void SYSTICK_Init(void)
 	SysTick_Config(clocks.CPU_Frequency / 1000000);   ///< 1us
 }
 
+void SysTick_Handler(void)
+{
+	g_current_tick++;
+}
+
 // void SysTick_Handler(void)
 // {
 // 	g_current_tick++;
 // }
 
 //  domyst
-static volatile u32 systick_ctr = 0;
+#if 0 //나중에 원복
+static volatile u32 systick_ctr = 0;	//domyst 컴파일에러 나중 수정
 #if 1	//pbbch 181015 add system tick verialble for soft ware uart init.
 u32 gsys_tick_cnt=0;
 #endif
@@ -84,6 +90,7 @@ void SysTick_Handler(void)
 		}
 	}
 }
+#endif
 // end of domyst
 
 tick get_tick(void)

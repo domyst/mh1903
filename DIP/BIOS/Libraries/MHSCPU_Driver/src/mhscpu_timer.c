@@ -59,6 +59,18 @@ void TIM_PWMInit(TIM_Module_TypeDef *TIMMx, TIM_PWMInitTypeDef *TIM_PWMInitStruc
 }
 
 /**
+  * @brief  Gets the TIMx CurrentValue.
+  * @param  TIMMx: x can be 0 to select the TIM peripheral
+  * @param  TIMx: x can be 0 to 7 to select the TIM Number
+  * @retval Counter Current Value
+  */
+uint32_t TIM_GetCounter(TIM_Module_TypeDef *TIMMx, TIM_NumTypeDef TIMx)
+{
+  /* Get the Counter Register value */
+  return TIMMx->TIM[TIMx].CurrentValue;
+}
+
+/**
   * @brief  Enable or disables the specified TIM peripheral
   * @param  TIMMx: x can be 0 to select the TIM peripheral
   * @param  TIMx: x can be 0 to 7 to select the TIM Number

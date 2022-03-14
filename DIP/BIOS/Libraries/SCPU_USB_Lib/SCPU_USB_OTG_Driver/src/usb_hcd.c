@@ -91,7 +91,7 @@ uint32_t HCD_Init(USB_OTG_CORE_HANDLE *pdev, USB_OTG_CORE_ID_TypeDef coreID)
     uint8_t i = 0;
     pdev->host.ConnSts = 0;
 
-    for (i = 0; i < USB_OTG_MAX_TX_FIFOS; i++)
+    for (i = 0; i < USB_OTG_MAX_EP_COUNT; i++)
     {
         pdev->host.ErrCnt[i] = 0;
         pdev->host.XferCnt[i] = 0;

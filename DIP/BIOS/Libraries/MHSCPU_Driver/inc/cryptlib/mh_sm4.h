@@ -20,7 +20,9 @@ extern "C" {
 #define MH_RET_SM4_INPUT_SIZE_ERROR				(('S'<<24)|('4'<<16)|('P'<<8)|('S'))
 #define MH_RET_SM4_KEY_READBACK_ERROR			(('S'<<24)|('4'<<16)|('K'<<8)|('R'))
 #define MH_RET_SM4_RESULT_CHECK_ERROR			(('S'<<24)|('4'<<16)|('R'<<8)|('C'))
-
+#define MH_RET_SM4_NO_RNG_ERROR                 (('S'<<24)|('4'<<16)|('N'<<8)|('R'))
+#define MH_RET_SM4_IV_ERROR                     (('S'<<24)|('4'<<16)|('I'<<8)|('V'))
+	
 #define MH_SM4_KEY_SIZE			(128 / 8)
 #define MH_SM4_IV_SIZE			(128 / 8)
 	

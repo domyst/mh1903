@@ -41,6 +41,9 @@ int iso7816_device_init( void );
 #define PPS_CONFIG( x, s )  ( x ) &= ~( PPS_SUPPORT );\
                             ( x ) |=  ( s )
 
+#define ENFORCE_PPS_SUPPORT     ( 64 )  //bit6
+
+
 #define SPD_MASK    ( 24 )
 #define SPD_1X      ( 0  )
 #define SPD_2X      ( 8  )

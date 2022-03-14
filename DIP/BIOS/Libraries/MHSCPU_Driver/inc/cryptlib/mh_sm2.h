@@ -77,6 +77,8 @@ typedef struct __SM2_SIGN
 #define MH_RET_SM2_GEN_SUCCESS              (MH_RET_ECC_KEY_GENERATION_SUCCESS)
 
 
+uint32_t sm2_verifykey(mh_sm2_private_key *key, const mh_sm2_ellipse_para *para, 
+                         mh_rng_callback f_rng, void *p_rng);
 
 uint32_t sm2_genkey(mh_sm2_private_key *key, const mh_sm2_ellipse_para *para, 
                     mh_rng_callback f_rng, void *p_rng);
@@ -155,9 +157,7 @@ uint32_t mh_sm2_key_ex_hash(uint8_t *Hash, uint8_t HashHead,
                         mh_sm2_point *Ra, mh_sm2_point *Rb);
 
 
-/***************************************************
-为升腾提供接口函数，重新封装了签名和验签函数
-*******************************************************/
+
 int MH_SM2Sign(sm2_sign *info, uint8_t *msg, uint32_t mlen,
                 mh_sm2_private_key *key, mh_sm2_ellipse_para *para,
                 mh_rng_callback f_rng, void *p_rng);

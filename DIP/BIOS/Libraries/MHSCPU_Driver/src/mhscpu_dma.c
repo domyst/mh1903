@@ -896,4 +896,9 @@ void DMA_InitLLI(DMA_TypeDef *DMA_Channelx, LLI *lli, LLI *next_lli, void *src_a
 	lli->DSTAT = 0;
 }
 
+uint32_t DMA_GetTransferNum(DMA_TypeDef* DMA_Channelx, uint32_t *first_adr)
+{
+	return (DMA_Channelx->DAR_L - (uint32_t)(first_adr));
+}
+
 /**************************      (C) COPYRIGHT Megahunt    *****END OF FILE****/

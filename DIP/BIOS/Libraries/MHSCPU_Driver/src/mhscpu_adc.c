@@ -234,4 +234,22 @@ void ADC_BuffCmd(FunctionalState NewState)
 		ADC0->ADC_CR2 |= ADC_CR2_BUFF_ENABLE;
 	}
 }
+
+/******************************************************************************
+* Function Name  : ADC_ChannelSwitch
+* Description    : 更改ADC采样通道
+* Input          : ADC_ChxTypeDef:ADC对应通道
+* Return         : NONE
+******************************************************************************/
+void ADC_ChannelSwitch(ADC_ChxTypeDef Channelx)
+{
+	uint8_t i;
+	
+	assert_param(IS_ADC_CHANNEL(Channelx));
+	ADC0->ADC_CR1=(ADC0->ADC_CR1&~(ADC_CR1_CHANNEL_MASK)) | Channelx;
+	for(i = 0;i < 7; i++)
+	{
+		ADC_GetResult();
+	}
+}
 /************************ (C) COPYRIGHT 2017 Megahuntmicro ****END OF FILE****/

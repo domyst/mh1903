@@ -516,7 +516,6 @@ int emv_hard_detect( struct emv_core *pdev )
  */
 int emv_hard_cold_reset( struct emv_core *pdev )
 {
-		uint32_t delay;		//by Megahunter.....
     int32_t s32Tmp;
     SCI_TypeDef * pSCI_Base;
     volatile SCI_EMV_PARAM * pSCI_Param;
@@ -601,28 +600,10 @@ int emv_hard_cold_reset( struct emv_core *pdev )
         {
 #if (0 == EMV_UNIT_TEST)
             //active card.
-					
-					//by Megahunter.....
-/*			
             pSCI_Base->SCI_CR2 = CR2_STARTUP;
             aEMV_Param[pdev->terminal_ch].stat = EMV_SCI_ACTIVE;
             pSCI_Base->SCI_IER = SCICARDOUT | SCIATRSTOUT | SCIRTOUT | SCICHTOUT | SCIRXTIDE | SCITXERR;
-*/
 
-		//by Megahunter.....
-		GPIO_PinRemapConfig(GPIOA, GPIO_Pin_10, GPIO_Remap_1);
-		GPIOA->OEN &= ~BIT(10);
-		GPIOA->BSRR |= BIT(10 + 16);
-		pSCI_Base->SCI_CR2 = CR2_STARTUP;
-		aEMV_Param[pdev->terminal_ch].stat = EMV_SCI_ACTIVE;
-		delay = SYSCTRL->HCLK_1MS_VAL * 3;
-		while(delay--);
-		GPIO_PinRemapConfig(GPIOA, GPIO_Pin_10, GPIO_Remap_0);
-		GPIOA->OEN |= BIT(10);
-		GPIO_GROUP[0].PUE |= BIT(10);
-		pSCI_Base->SCI_IER = SCICARDOUT | SCIATRSTOUT | SCIRTOUT | SCICHTOUT | SCIRXTIDE | SCITXERR;
-					
-					
             //alarm_counter++;
             while(EMV_SCI_ACTIVE == aEMV_Param[pdev->terminal_ch].stat);
 #else
@@ -649,8 +630,6 @@ int emv_hard_warm_reset( struct emv_core *pdev )
     SCI_TypeDef * pSCI_Base;
     volatile SCI_EMV_PARAM * pSCI_Param;
 
-    uint32_t delay = SYSCTRL->HCLK_1MS_VAL * 20;
-    while(delay--);
     if (!(pdev->terminal_ch < SLOT_COUNT))
     {
         return -1;
@@ -696,7 +675,7 @@ int emv_hard_warm_reset( struct emv_core *pdev )
     pSCI_Base->SCI_BAUD = pSCI_Param->SCIx_BaudReg;
     pSCI_Base->SCI_VALUE = pSCI_Param->SCIx_ValueReg;
     //active time, RST holding low time(ICC clock).
-    pSCI_Base->SCI_ATIME = 41000; //ATR_S_TIME * CLK_DIV;
+    pSCI_Base->SCI_ATIME = ATR_S_TIME * CLK_DIV;
     //TS waiting time(ICC clock).
     //pSCI_Base->SCI_ATRSTIME = 42372 * CLK_DIV;
     pSCI_Base->SCI_ATRSTIME = ATR_S_TIME * CLK_DIV;
@@ -1188,7 +1167,7 @@ int emv_hard_xmit(struct emv_core *pdev)
         pdev->terminal_ptype = 0;
         pSCI_Base->SCI_CHTIME = pdev->terminal_wwt;
         pSCI_Base->SCI_BLKTIME = pdev->terminal_wwt - 12;
-        pSCI_Base->SCI_CHGUARD = pdev->terminal_cgt - 12 + 1;
+        pSCI_Base->SCI_CHGUARD = pdev->terminal_cgt - 12;
         //pSCI_Base->SCI_BLKGUARD = pdev->terminal_igt - 12;
         //dprintf("WWT 0x%08x!\n", pdev->terminal_wwt);
         //0:2 TX retry, 3:5 RX retry.

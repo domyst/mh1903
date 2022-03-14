@@ -220,18 +220,7 @@ uint8_t  USBD_MSC_Setup (void  *pdev, USB_SETUP_REQ *req)
          ((req->bmRequest & 0x80) == 0x80))
       {
         USBD_MSC_MaxLun = USBD_STORAGE_fops->GetMaxLun();
-        if(USBD_MSC_MaxLun >= 0)
-        {
-           USBD_CtlSendData (pdev,
-                             &USBD_MSC_MaxLun,
-                              1);
-        }
-        else
-        {
-          USBD_CtlError(pdev , req);
-          return USBD_FAIL; 
-          
-        }
+        USBD_CtlSendData (pdev, &USBD_MSC_MaxLun, 1);
       }
       else
       {

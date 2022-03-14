@@ -88,6 +88,9 @@ typedef enum
 #define SYSCTRL_PCLK_Div2                          ((uint32_t)0x01)
 #define IS_GET_SYSCTRL_PCLK_DIV(DIV)               (((DIV) == SYSCTRL_PCLK_Div2)) 
                                                    
+#define SYSCTRL_CHIP_SN_ADDR                        0x40008C04
+#define SYSCTRL_CHIP_SN_LEN                         16
+
 void SYSCTRL_AHBPeriphClockCmd(uint32_t SYSCTRL_AHBPeriph, FunctionalState NewState);
 void SYSCTRL_AHBPeriphResetCmd(uint32_t SYSCTRL_AHBPeriph, FunctionalState NewState);
 void SYSCTRL_APBPeriphClockCmd(uint32_t SYSCTRL_APBPeriph, FunctionalState NewState);
@@ -102,8 +105,9 @@ void SYSCTRL_HCLKConfig(uint32_t HCLK_Div);
 void SYSCTRL_PCLKConfig(uint32_t PCLK_Div);
 
 void SYSCTRL_GetClocksFreq(SYSCTRL_ClocksTypeDef* SYSCTRL_Clocks);
+void SYSCTRL_GetChipSN(unsigned char *ChipSN);
 
-
+void SYSCTRL_SoftReset(void);
 #ifdef __cplusplus
 }
 #endif
