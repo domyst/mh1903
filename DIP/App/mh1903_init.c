@@ -3524,8 +3524,9 @@ void FLASH_ProgramOptionByteData(uint32_t Address, uint8_t Data)
 	uint8_t write_buf[X25Q_PAGE_SIZE];
 
 
-	memset(write_buf, 0xff, X25Q_PAGE_SIZE);		// FLASH_PAGE_SIZE
-	memcpy(write_buf, &Data, sizeof(Data))
+	// memset(write_buf, 0xff, X25Q_PAGE_SIZE);		// FLASH_PAGE_SIZE
+	// memcpy(write_buf, &Data, sizeof(Data))
+	
 	// for (i = 0; i < pagNum; i++)
 	// {
 	// 	if (DATA_TYPE_ADDRESS_SELF == dataType)
@@ -3540,6 +3541,8 @@ void FLASH_ProgramOptionByteData(uint32_t Address, uint8_t Data)
 	// }
 	
 	//FLASH_ProgramPage(FLASH_OPTION_ADDR, sizeof(Data), (uint8_t*)(Data));
-	FLASH_ProgramPage(FLASH_OPTION_ADDR, X25Q_PAGE_SIZE, write_buf);
+	//FLASH_ProgramPage(FLASH_OPTION_ADDR, X25Q_PAGE_SIZE, write_buf);
+	FLASH_ProgramPage(FLASH_OPTION_ADDR, 1, &Data);
+
 }
 /******************* (C) COPYRIGHT 2007 INSEM Inc ***************************************END OF FILE****/

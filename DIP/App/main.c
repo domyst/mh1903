@@ -647,7 +647,7 @@ int main(void)
 	//#if ADDED_BY_DOMYST
 	#if 1
 	//while(1)
-	for (i=0; i < 3; i++)
+	for (i=0; i < 1; i++)
 	{
 		TIMM0_Mdelay(TIM_0, 1000);		
 		printf("current Timer0_%d_GetTick tick = %u \n", TIM_0, TIMM0_GetTick(TIM_0));
@@ -675,7 +675,7 @@ int main(void)
 	}
 	#endif
 
-	//flash_test();
+	flash_test();
 	FLASH_read(0x1091000U, buf, 16);
 
 	//p = (uint8_t *)0x1091000U;

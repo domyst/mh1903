@@ -164,6 +164,7 @@ void flash_test_ok(void)
 void flash_test(void)
 {
     uint32_t i = 0, j = 0;
+    uint8_t Data = 0x12;
 	uint32_t write_Buf[X25Q_PAGE_SIZE/4] = {0};
     uint8_t data_buf_00toFF[X25Q_PAGE_SIZE] = {0};
     uint8_t read_buf[X25Q_PAGE_SIZE] = {0};
@@ -176,10 +177,13 @@ void flash_test(void)
     FLASH_EraseSector(FLASH_START_ADDR);
 	EraseCheck(FLASH_START_ADDR, 16);
 
-    memset(write_Buf, 0x5A, sizeof(write_Buf));
+    //memset(write_Buf, 0x5A, sizeof(write_Buf));
+    memset(write_Buf, 0x12, sizeof(write_Buf));
 
-    FLASH_ProgramPage(program_addr, /*sizeof(write_Buf)*/16, (uint8_t*)(write_Buf));
-
+    // ok FLASH_ProgramPage(program_addr, /*sizeof(write_Buf)*/16, (uint8_t*)(write_Buf));
+    // 1byte test
+    //FLASH_ProgramPage(program_addr, /*sizeof(write_Buf)*/1, &Data);
+    FLASH_ProgramPage(program_addr, /*sizeof(write_Buf)*/4, (uint8_t*)(write_Buf));
     // FLASH_read(program_addr, read_buf, 16);
 
     // for (i=0; i<16; i++)
