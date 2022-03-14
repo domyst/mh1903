@@ -19,6 +19,7 @@
 #include "uart.h"
 #include "CreditCard_lib.h"
 
+#include "mhscpu_qspi.h"
 #define USE_EXTERN_32K
 
 #if QFN88	// domyst
@@ -505,7 +506,7 @@ int main(void)
 
 }
 #else
-int main(void)
+int main_ser_timer(void)
 {
 	uint16_t	i;
 	uint8_t rxdata;
@@ -583,7 +584,112 @@ int main(void)
 		TIMM0_Mdelay(TIM_7, 1000);		
 		printf("current Timer0_%d_GetTick tick = %u \n", TIM_7, TIMM0_GetTick(TIM_7));	
 	}
+}
+#endif
+int main(void)
+{
+	uint16_t	i;
+	uint8_t rxdata;
+	uint8_t *p;
+	uint8_t buf[256]={0};
+
+	QSPI_Init(NULL);
+
+	//SYSCTRL_SYSCLKSourceSelect(SELECT_EXT12M);	// SELECT_INC12M
+	SYSCTRL_SYSCLKSourceSelect(SELECT_INC12M);		// domyst
+	//SYSCTRL_PLLConfig(SYSCTRL_PLL_204MHz);
+	SYSCTRL_PLLConfig(SYSCTRL_PLL_192MHz);
+	SYSCTRL_PLLDivConfig(SYSCTRL_PLL_Div_None);
+	SYSCTRL_HCLKConfig(SYSCTRL_HCLK_Div2);
+//	SYSCTRL_PCLKConfig(SYSCTRL_PCLK_Div2);	/* PCLK >= 48M */
+	
+	//SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_GPIO, ENABLE);
+	// domyst
+	//SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_UART0 | SYSCTRL_APBPeriph_TIMM0 | SYSCTRL_APBPeriph_GPIO, ENABLE); //if no, ok
+	// org SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_UART0 | SYSCTRL_APBPeriph_TIMM0, ENABLE);
+	// end domyst
+
+	QSPI_SetLatency(0);
+
+	SYSCTRL_AHBPeriphClockCmd(SYSCTRL_AHBPeriph_DMA, ENABLE);
+	SYSCTRL_AHBPeriphResetCmd(SYSCTRL_AHBPeriph_DMA, ENABLE);
+	
+	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_UART0 | SYSCTRL_APBPeriph_TIMM0 | SYSCTRL_APBPeriph_GPIO, ENABLE);
+	SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_UART0 | SYSCTRL_APBPeriph_TIMM0, ENABLE);
+
+	SYSTICK_Init();	
+	
+	UART_Configuration();
+	UART_ITConfig(UART0, UART_IT_RX_RECVD, ENABLE);	// domyst
+	#if ADDED_BY_DOMYST
+	// added by domyst 2022-02-22
+	TIMER_Configuration();
+	NVIC_Configuration();
+	//
 	#endif
+	// TOUCH_Configuration();
+	// LCD_Configuration();
+	// BEEP_Configuration();
+	// KEY_Configuration();
+	// FND_Configuration();
+//	MSR_Configuration();
+	// QR_Configuration();
+	// SCI_Configuration();
+	// DAC_Configuration();
+	// RTC_Configuration();
+
+	//By Psk: Led Off
+	// GPIO_ResetBits(GPIOA, GPIO_Pin_3);
+
+	// FND_BIT_Write(0x00);
+	printf("CSS Demo V1.1..\r\n");	// domyst
+	// added by domsyt
+	//#if ADDED_BY_DOMYST
+	#if 1
+	//while(1)
+	for (i=0; i < 3; i++)
+	{
+		TIMM0_Mdelay(TIM_0, 1000);		
+		printf("current Timer0_%d_GetTick tick = %u \n", TIM_0, TIMM0_GetTick(TIM_0));
+		#if 1
+		TIMM0_Mdelay(TIM_1, 1000);		
+		printf("current Timer0_%d_GetTick tick = %u \n", TIM_1, TIMM0_GetTick(TIM_1));
+		
+		TIMM0_Mdelay(TIM_2, 1000);		
+		printf("current Timer0_%d_GetTick tick = %u \n", TIM_2, TIMM0_GetTick(TIM_2));
+		
+		TIMM0_Mdelay(TIM_3, 1000);		
+		printf("current Timer0_%d_GetTick tick = %u \n", TIM_3, TIMM0_GetTick(TIM_3));
+		
+		TIMM0_Mdelay(TIM_4, 1000);		
+		printf("current Timer0_%d_GetTick tick = %u \n", TIM_4, TIMM0_GetTick(TIM_4));
+		#endif
+		TIMM0_Mdelay(TIM_5, 1000);		
+		printf("current Timer0_%d_GetTick tick = %u \n", TIM_5, TIMM0_GetTick(TIM_5));
+		
+		TIMM0_Mdelay(TIM_6, 1000);		
+		printf("current Timer0_%d_GetTick tick = %u \n", TIM_6, TIMM0_GetTick(TIM_6));
+	
+		TIMM0_Mdelay(TIM_7, 1000);		
+		printf("current Timer0_%d_GetTick tick = %u \n", TIM_7, TIMM0_GetTick(TIM_7));	
+	}
+	#endif
+
+	//flash_test();
+	FLASH_read(0x1091000U, buf, 16);
+
+	//p = (uint8_t *)0x1091000U;
+	for (i=0; i<16; i++)
+	{
+		printf("[%#02X]", buf[i]);
+	}
+
+	// p = (uint8_t *)0x1091000U;
+	// for (i=0; i<16; i++)
+	// {
+	// 	printf("[%#02X]", *p++);
+	// }
+
 	while(1)
 	{
 		if(!isEmpty(&uart))
