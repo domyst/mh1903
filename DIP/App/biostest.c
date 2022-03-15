@@ -3,8 +3,12 @@
 #include <string.h>
 #include "mhscpu.h"
 #include "mhscpu_it.h"
+#include "uart.h"
 //
 #include "mhscpu_qspi.h"
+#include "mhscpu_msr.h"
+
+extern uart_t uart;
 
 // program star address 0x1001000 (0x80000)
 #define FLASH_SIZE_BYTES        (1024 * 1024 - 64 * 1024)
@@ -306,3 +310,140 @@ static int FlashTest(uint32_t pagNum, uint32_t dataType)
 	printf("Flash Read Data Check OK \n");	
 	return 0;
 }
+
+// msr test
+void MSR_test(void)
+{
+	track_data tdata[MAX_TRACK_NUM];
+	int ret;
+	int i, j;
+	uint8_t cfmt, tflag;
+	int cnts = 0;
+	int lcd_line = 0;
+	unsigned char raw_data_buf[256];
+    uint8_t rxdata;
+    int dir;
+
+	set_wakeup_status(HARD_WAKEUP_WITHOUT_SLEEP);
+	init_dpu();
+
+	sc_sleep();
+
+    dir = get_swipe_dir();
+    printf("\nmsr dir[%d]\n", dir);
+    // set_swipe_dir(SD_FORWARD_DIRECTION);
+    // dir = get_swipe_dir();
+    // printf("\nmsr dir[%d]\n", dir);
+
+	//while(old_count == button_count)
+    while (1)
+	{
+		switch (detect_swiping_card())
+		{
+		case DETECT_SWIPING_CARD:
+			{
+				printf("\r\nDetect swiping card,Times: %d \n", ++cnts);
+				// LCD_DisplayColor(LCD_DISP_BLACK);
+				// LCD_DisplayStr((uint8_t *)"Detect swiping card,Times:", 8, 8, LCD_DISP_RED,  LCD_DISP_BLACK );
+				// LCD_DisplayOneInt(cnts, 224, 8, LCD_DISP_GREEN, LCD_DISP_BLACK, 5);
+
+				cfmt = tflag = 0;
+				#if 0
+                ret = get_decode_data(tdata, TRACK_SELECT_1 | TRACK_SELECT_2 | TRACK_SELECT_3, &cfmt, &tflag);
+				printf("T1 = %d, T2 = %d, T3 = %d\ttflag = %02X\n", (int)tdata[0].len, (int)tdata[1].len, (int)tdata[2].len, (int)tflag);
+                #endif
+                ret = get_decode_data(tdata, TRACK_SELECT_2 | TRACK_SELECT_3, &cfmt, &tflag);
+				//printf("ret[%d], T2 = %d, T3 = %d\ttflag = %02X\n", ret, (int)tdata[1].len, (int)tdata[2].len, (int)tflag);
+                printf("\n");
+                switch (ret)
+                {
+                    case SUCCESS:
+                        printf("success[0]\n");
+                        break;
+                    case INVALID_ADDR:
+                        printf("invalid address[1]\n");
+                        break;
+                    case PARITY_ERR:
+                        printf("parity error[2]\n");
+                        break;
+                    case LENGTH_ERR:
+                        printf("length error[3]\n");
+                        break;
+                    case TRACK_NO_DATA:
+                        printf("track no data[4]\n");
+                        break;
+                    case HAVE_NO_ZERO:
+                        printf("have no zero[5]\n");
+                        break;
+                }
+                printf("T2 = %d, T3 = %d\ttflag = %02X\n",(int)tdata[1].len, (int)tdata[2].len, (int)tflag);
+
+				// LCD_DisplayStr((uint8_t *)"T1 = ", 8, 24, LCD_DISP_RED,  LCD_DISP_BLACK );
+				// LCD_DisplayOneInt((int)tdata[0].len, 48, 24, LCD_DISP_RED, LCD_DISP_BLACK,5);
+
+				// LCD_DisplayStr((uint8_t *)"T2 = ", 102, 24, LCD_DISP_RED,  LCD_DISP_BLACK );
+				// LCD_DisplayOneInt((int)tdata[1].len, 142, 24, LCD_DISP_RED, LCD_DISP_BLACK,5);
+
+				// LCD_DisplayStr((uint8_t *)"T3 = ", 196, 24, LCD_DISP_RED,  LCD_DISP_BLACK );
+				// LCD_DisplayOneInt((int)tdata[2].len, 236, 24, LCD_DISP_RED, LCD_DISP_BLACK,5);
+				
+				// LCD_DisplayStr((uint8_t *)"tFlag = ", 286, 24, LCD_DISP_RED,  LCD_DISP_BLACK );
+				// LCD_DisplayOneInt((int)tflag, 350, 24, LCD_DISP_RED, LCD_DISP_BLACK,5);
+
+				// lcd_line = 56;
+
+				if (ret == SUCCESS)		
+				{
+					for (i = 0; i < MAX_TRACK_NUM; i++)
+					{
+						if (tdata[i].len)
+						{
+							printf("T%d decode data:\n", (int)(i+1));
+							// LCD_DisplayStr((uint8_t *)"T  decode data:", 8, lcd_line, LCD_DISP_RED,  LCD_DISP_BLACK );
+							// LCD_DisplayOneChar((unsigned char)(i + 1) & 0x0F, 16, lcd_line, LCD_DISP_RED, LCD_DISP_BLACK);
+							// lcd_line = lcd_line + 16; //LCD_FONT_H
+
+							for (j = 0; j < tdata[i].len; j++)
+							{
+								putchar(tdata[i].buf[j]);
+							}
+							// LCD_DisplayStr( &tdata[i].buf[0], 8, lcd_line, LCD_DISP_GREEN,  LCD_DISP_BLACK );
+
+							printf("\r\n");
+							// lcd_line = lcd_line + 16;
+							// lcd_line = lcd_line + 16;
+
+						}
+
+						printf("\n\rT%d raw data:\r\n", (int)(i+1));
+						get_track_raw_data(raw_data_buf, i);
+
+						for(j=0;j < 256; j++)
+						{
+							printf("%02X",raw_data_buf[j]);
+						}
+
+					}
+					// beep(200);
+				}
+			}
+			break;
+
+			
+		case DETECT_HARD_WAKEUP:
+			sc_sleep();			
+			break;
+			
+		case DETECT_NO_SWIPING_CARD:
+		default:
+			break;
+		}
+
+        if(!isEmpty(&uart))
+		{
+			rxdata = pop(&uart);
+			Uart0_SendDatas(&rxdata,1);
+		}
+	}
+}
+// end of msr test

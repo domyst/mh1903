@@ -675,7 +675,7 @@ int main(void)
 	}
 	#endif
 
-	flash_test();
+	//flash_test();
 	FLASH_read(0x1091000U, buf, 16);
 
 	//p = (uint8_t *)0x1091000U;
@@ -683,7 +683,7 @@ int main(void)
 	{
 		printf("[%#02X]", buf[i]);
 	}
-
+	MSR_test();
 	// p = (uint8_t *)0x1091000U;
 	// for (i=0; i<16; i++)
 	// {
