@@ -906,6 +906,42 @@ void sensor_test(void)
     }
 }
 
+void led_test(void)
+{
+    uint8_t rxdata, ret;
+
+    printf("\r\n led test..\n");
+    while(1)
+    {
+        if(!isEmpty(&uart))
+        {
+            rxdata = pop(&uart);
+            Uart0_SendDatas(&rxdata,1);
+            switch (rxdata)
+            {
+                case '0':
+                    printf("\n red off");
+                    LED_RED_ON(0);
+                    break;
+                case '1':
+                    printf("\n red on");
+                    LED_RED_ON(1);
+                    break;
+                case '2':
+                    printf("\n yellow off");
+                    LED_YELLOW_ON(0);
+                    break;
+                case '3':
+                    printf("\n yellow on");
+                    LED_YELLOW_ON(1);
+                    break;
+                case 'x':
+                    return;
+            }
+        }
+    }
+}
+
 void bios_test(void)
 {
     uint8_t rxdata;
@@ -947,6 +983,11 @@ void bios_test(void)
                     printf("\n sensor test");
                     sensor_power_on(1);
                     sensor_test();
+                    break;
+                case '3':
+                    //printf("\n led test");
+                    led_test();
+                    break;
                 case '?':
                     printf("\n 'm' : msr test");
                     printf("\n 'i' : ifm test");
@@ -954,6 +995,7 @@ void bios_test(void)
                     printf("\n '0' : ifm power off test");
                     printf("\n '1' : ifm power on test");
                     printf("\n 's' : sensor test");
+                    printf("\n '3' : led test");
                     // printf("\n 1 : msr test");
                     // printf("\n 1 : msr test");
                     break;

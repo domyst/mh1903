@@ -40,6 +40,34 @@ void Select_SAM_VCC(void)
 	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_3;
 	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOH, &GPIO_InitStruct);
+
+
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_2;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOH, &GPIO_InitStruct);
+	
+ 	GPIO_SetBits(SAM_VCC_1_8V_PORT, SAM_VCC_1_8V_PIN);					//In order to use the VCC_5V_3V, you have to set the 1.8V Pin to High.
+//	GPIO_ResetBits(VCC_1_8V_PORT,VCC_1_8V_PIN);					//In order to use the 1.8V, you have to set the VCC_5V_3V Pin to High.
+	
+	GPIO_SetBits(SAM_VCC_5V_3V_PORT, SAM_VCC_5V_3V_PIN);		//5V select	
+//	GPIO_ResetBits(VCC_5V_3V_PORT,VCC_5V_3V_PIN);		//3V select
+
+}
+
+void Select_SAM_VCC_x(void)
+{
+/*	
+#define VCC_5V_3V_PORT	GPIOH					
+#define VCC_1_8V_PORT	GPIOH					
+#define VCC_5V_3V_PIN	GPIO_Pin_1
+#define VCC_1_8V_PIN	GPIO_Pin_0					
+*/	
+	GPIO_InitTypeDef  GPIO_InitStruct;
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_3;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
 	GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 
@@ -190,11 +218,12 @@ void SAM_Configuration(void)
 
 void LED_YELLOW_ON(uint8_t data)
 {
-    // GPIO_InitTypeDef  GPIO_InitStruct;
-	// GPIO_InitStruct.GPIO_Pin = GPIO_Pin_4;
-	// GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
-	// GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
-	// GPIO_Init(GPIOH, &GPIO_InitStruct);
+	// mh1903_init.c 哪颇老 饶 力芭贸府
+    GPIO_InitTypeDef  GPIO_InitStruct;
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_4;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOH, &GPIO_InitStruct);
 
 	if (data == 1)
         GPIO_ResetBits(GPIOH, GPIO_Pin_4);
@@ -204,11 +233,12 @@ void LED_YELLOW_ON(uint8_t data)
 
 void LED_RED_ON(uint8_t data)
 {
-    // GPIO_InitTypeDef  GPIO_InitStruct;
-	// GPIO_InitStruct.GPIO_Pin = GPIO_Pin_5;
-	// GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
-	// GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
-	// GPIO_Init(GPIOH, &GPIO_InitStruct);
+	// mh1903_init.c 哪颇老 饶 力芭贸府
+    GPIO_InitTypeDef  GPIO_InitStruct;
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_5;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOH, &GPIO_InitStruct);
 
 	if (data == 1)
         GPIO_ResetBits(GPIOH, GPIO_Pin_5);
