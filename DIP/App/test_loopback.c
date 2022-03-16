@@ -7,7 +7,7 @@
 #include "iso7816_3.h"
 #include "ili9488.h"
 
-void IC_CARD_detection(uint8_t data);
+void IC_CARD_detection(uint8_t data);   // domyst
 
 #if VERSION_410 == EMV_VERSION
 
