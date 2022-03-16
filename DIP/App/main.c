@@ -55,10 +55,10 @@ void SCI_Configuration(void);
 //void DAC_Test(void);
 //void RTC_Test(void);
 
-uint8_t			Valid_Credit_Number[200]="";
-uint8_t			ValidNumber[5]="";
-uint8_t			CreditNumber[100]="";
-uint32_t		Valid_Credit_Len=0;
+// uint8_t			Valid_Credit_Number[200]="";
+// uint8_t			ValidNumber[5]="";
+//uint8_t			CreditNumber[100]="";
+// uint32_t		Valid_Credit_Len=0;
 
 uart_t uart;
 
@@ -114,33 +114,33 @@ void IFM_Power_On(uint8_t data)
 		GPIO_ResetBits(GPIOA, GPIO_Pin_5);
 }
 #else
-void Select_EMV_VCC(void)
-{
-/*	
-#define VCC_5V_3V_PORT	GPIOA
-#define VCC_1_8V_PORT	GPIOF
-#define VCC_5V_3V_PIN	GPIO_Pin_11
-#define VCC_1_8V_PIN	GPIO_Pin_8	
-*/	
-	GPIO_InitTypeDef  GPIO_InitStruct;
-	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_11;
-	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
-	GPIO_Init(GPIOA, &GPIO_InitStruct);
+// void Select_EMV_VCC(void)
+// {
+// /*	
+// #define VCC_5V_3V_PORT	GPIOA
+// #define VCC_1_8V_PORT	GPIOF
+// #define VCC_5V_3V_PIN	GPIO_Pin_11
+// #define VCC_1_8V_PIN	GPIO_Pin_8	
+// */	
+// 	GPIO_InitTypeDef  GPIO_InitStruct;
+// 	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_11;
+// 	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+// 	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+// 	GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 
-	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_8;
-	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
-	GPIO_Init(GPIOF, &GPIO_InitStruct);
+// 	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_8;
+// 	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+// 	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+// 	GPIO_Init(GPIOF, &GPIO_InitStruct);
 	
- 	GPIO_SetBits(VCC_1_8V_PORT,VCC_1_8V_PIN);					//In order to use the VCC_5V_3V, you have to set the 1.8V Pin to High.
-//	GPIO_ResetBits(VCC_1_8V_PORT,VCC_1_8V_PIN);					//In order to use the 1.8V, you have to set the VCC_5V_3V Pin to High.
+//  	GPIO_SetBits(VCC_1_8V_PORT,VCC_1_8V_PIN);					//In order to use the VCC_5V_3V, you have to set the 1.8V Pin to High.
+// //	GPIO_ResetBits(VCC_1_8V_PORT,VCC_1_8V_PIN);					//In order to use the 1.8V, you have to set the VCC_5V_3V Pin to High.
 	
-	GPIO_SetBits(VCC_5V_3V_PORT,VCC_5V_3V_PIN);		//5V select	
-//	GPIO_ResetBits(VCC_5V_3V_PORT,VCC_5V_3V_PIN);		//3V select
+// 	GPIO_SetBits(VCC_5V_3V_PORT,VCC_5V_3V_PIN);		//5V select	
+// //	GPIO_ResetBits(VCC_5V_3V_PORT,VCC_5V_3V_PIN);		//3V select
 
-}
+// }
 #endif
 
 
@@ -637,6 +637,7 @@ int main(void)
 	// SCI_Configuration();
 	// DAC_Configuration();
 	// RTC_Configuration();
+	IFM_Configuration();
 
 	//By Psk: Led Off
 	// GPIO_ResetBits(GPIOA, GPIO_Pin_3);
@@ -683,21 +684,40 @@ int main(void)
 	{
 		printf("[%#02X]", buf[i]);
 	}
-	MSR_test();
+	//MSR_test();
+	//IFM_test();
 	// p = (uint8_t *)0x1091000U;
 	// for (i=0; i<16; i++)
 	// {
 	// 	printf("[%#02X]", *p++);
 	// }
 
+	bios_test();
+	#if 0
 	while(1)
 	{
 		if(!isEmpty(&uart))
 		{
 			rxdata = pop(&uart);
 			Uart0_SendDatas(&rxdata,1);
+			switch (rxdata)
+			{
+				case '1':
+					MSR_test();
+					break;
+				case '2':
+					IFM_test();
+					break;
+				case '3':
+					IFM_Power_On(0);
+					break;
+				case '4':
+					IFM_Power_On(1);
+					break;
+			}
 		}
 	}
+	#endif
 }
 #endif
 

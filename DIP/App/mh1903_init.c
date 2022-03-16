@@ -22,6 +22,9 @@
 #include "usb_pwr.h"
 
 
+// emv core header
+#include "emv_core.h"
+//
 /* Private macro -------------------------------------------------------------*/
 #define IFM_VCC_5V_3V_PORT	GPIOH					
 #define IFM_VCC_1_8V_PORT	GPIOH					
@@ -3546,3 +3549,98 @@ void FLASH_ProgramOptionByteData(uint32_t Address, uint8_t Data)
 
 }
 /******************* (C) COPYRIGHT 2007 INSEM Inc ***************************************END OF FILE****/
+
+void Select_EMV_VCC_org(void)
+{
+/*	
+#define VCC_5V_3V_PORT	GPIOA
+#define VCC_1_8V_PORT	GPIOF
+#define VCC_5V_3V_PIN	GPIO_Pin_11
+#define VCC_1_8V_PIN	GPIO_Pin_8	
+*/	
+	GPIO_InitTypeDef  GPIO_InitStruct;
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_11;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_8;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOF, &GPIO_InitStruct);
+	
+ 	GPIO_SetBits(VCC_1_8V_PORT,VCC_1_8V_PIN);					//In order to use the VCC_5V_3V, you have to set the 1.8V Pin to High.
+//	GPIO_ResetBits(VCC_1_8V_PORT,VCC_1_8V_PIN);					//In order to use the 1.8V, you have to set the VCC_5V_3V Pin to High.
+	
+	GPIO_SetBits(VCC_5V_3V_PORT,VCC_5V_3V_PIN);		//5V select	
+//	GPIO_ResetBits(VCC_5V_3V_PORT,VCC_5V_3V_PIN);		//3V select
+
+}
+
+void SCI_NVICConfig(void)
+{
+	NVIC_InitTypeDef NVIC_InitStructure;
+    
+    NVIC_SetPriorityGrouping(NVIC_PriorityGroup_0);
+    
+    NVIC_InitStructure.NVIC_IRQChannel = SCI0_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
+}
+
+void Select_EMV_VCC(void)
+{
+/*	
+#define VCC_5V_3V_PORT	GPIOA
+#define VCC_1_8V_PORT	GPIOF
+#define VCC_5V_3V_PIN	GPIO_Pin_11
+#define VCC_1_8V_PIN	GPIO_Pin_8	
+*/	
+	GPIO_InitTypeDef  GPIO_InitStruct;
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_1;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOH, &GPIO_InitStruct);
+
+
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_0;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOH, &GPIO_InitStruct);
+	
+ 	GPIO_SetBits(VCC_1_8V_PORT,VCC_1_8V_PIN);					//In order to use the VCC_5V_3V, you have to set the 1.8V Pin to High.
+//	GPIO_ResetBits(VCC_1_8V_PORT,VCC_1_8V_PIN);					//In order to use the 1.8V, you have to set the VCC_5V_3V Pin to High.
+	
+	GPIO_SetBits(VCC_5V_3V_PORT,VCC_5V_3V_PIN);		//5V select	
+//	GPIO_ResetBits(VCC_5V_3V_PORT,VCC_5V_3V_PIN);		//3V select
+
+}
+
+void SCI_IOConfig(void)
+{
+    GPIO_PinRemapConfig(GPIOA, GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10, GPIO_Remap_0);
+
+    //card detect
+    SYSCTRL->PHER_CTRL &= ~BIT(16);
+//    SYSCTRL->PHER_CTRL |= BIT(16);
+    //Choose active level(Low level active).
+    SYSCTRL->PHER_CTRL |= BIT(20);
+
+}
+
+void SCI_Configuration(void)
+{
+	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_SCI0, ENABLE);
+    SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_SCI0, ENABLE);
+
+	SCI_IOConfig();
+
+	Select_EMV_VCC();
+	SCI_ConfigEMV(0x01, 3000000);
+
+	SCI_NVICConfig();	
+}

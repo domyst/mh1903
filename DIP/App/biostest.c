@@ -7,8 +7,10 @@
 //
 #include "mhscpu_qspi.h"
 #include "mhscpu_msr.h"
+#include "CreditCard_lib.h"
 
 extern uart_t uart;
+extern void loop_back(uint8_t u8Slot);
 
 // program star address 0x1001000 (0x80000)
 #define FLASH_SIZE_BYTES        (1024 * 1024 - 64 * 1024)
@@ -38,7 +40,12 @@ static int DataCheckReverse(void *src, void *dst, uint32_t size);
 static int EraseCheck(uint32_t addr, uint32_t pagNum);
 static int FlashTest(uint32_t pagNum, uint32_t dataType);
 
-
+// main.c
+uint8_t			Valid_Credit_Number[200]="";
+uint8_t			ValidNumber[5]="";
+uint8_t			CreditNumber[100]="";
+uint32_t		Valid_Credit_Len=0;
+//
 
 static void DataPrintf(void *buf, uint32_t bufsize)
 {
@@ -312,7 +319,7 @@ static int FlashTest(uint32_t pagNum, uint32_t dataType)
 }
 
 // msr test
-void MSR_test(void)
+void MSR_test_ok(void)
 {
 	track_data tdata[MAX_TRACK_NUM];
 	int ret;
@@ -446,4 +453,441 @@ void MSR_test(void)
 		}
 	}
 }
+
+void MSR_test(void)
+{
+	track_data tdata[MAX_TRACK_NUM];
+	int ret;
+	int i, j;
+	uint8_t cfmt, tflag;
+	int cnts = 0;
+	int lcd_line = 0;
+	unsigned char raw_data_buf[256];
+    uint8_t rxdata;
+    int dir;
+
+	set_wakeup_status(HARD_WAKEUP_WITHOUT_SLEEP);
+	init_dpu();
+
+	sc_sleep();
+
+    dir = get_swipe_dir();
+    printf("\nmsr dir[%d]\n", dir);
+    // set_swipe_dir(SD_FORWARD_DIRECTION);
+    // dir = get_swipe_dir();
+    // printf("\nmsr dir[%d]\n", dir);
+
+	//while(old_count == button_count)
+    while (1)
+	{
+		switch (detect_swiping_card())
+		{
+		case DETECT_SWIPING_CARD:
+			{
+				printf("\r\nDetect swiping card,Times: %d \n", ++cnts);
+				// LCD_DisplayColor(LCD_DISP_BLACK);
+				// LCD_DisplayStr((uint8_t *)"Detect swiping card,Times:", 8, 8, LCD_DISP_RED,  LCD_DISP_BLACK );
+				// LCD_DisplayOneInt(cnts, 224, 8, LCD_DISP_GREEN, LCD_DISP_BLACK, 5);
+
+				cfmt = tflag = 0;
+				#if 0
+                ret = get_decode_data(tdata, TRACK_SELECT_1 | TRACK_SELECT_2 | TRACK_SELECT_3, &cfmt, &tflag);
+				printf("T1 = %d, T2 = %d, T3 = %d\ttflag = %02X\n", (int)tdata[0].len, (int)tdata[1].len, (int)tdata[2].len, (int)tflag);
+                #endif
+                ret = get_decode_data(tdata, TRACK_SELECT_2 | TRACK_SELECT_3, &cfmt, &tflag);
+				//printf("ret[%d], T2 = %d, T3 = %d\ttflag = %02X\n", ret, (int)tdata[1].len, (int)tdata[2].len, (int)tflag);
+                printf("\n");
+                switch (ret)
+                {
+                    case SUCCESS:
+                        printf("success[0]\n");
+                        break;
+                    case INVALID_ADDR:
+                        printf("invalid address[1]\n");
+                        break;
+                    case PARITY_ERR:
+                        printf("parity error[2]\n");
+                        break;
+                    case LENGTH_ERR:
+                        printf("length error[3]\n");
+                        break;
+                    case TRACK_NO_DATA:
+                        printf("track no data[4]\n");
+                        break;
+                    case HAVE_NO_ZERO:
+                        printf("have no zero[5]\n");
+                        break;
+                }
+                printf("T2 = %d, T3 = %d\ttflag = %02X\n",(int)tdata[1].len, (int)tdata[2].len, (int)tflag);
+
+				// LCD_DisplayStr((uint8_t *)"T1 = ", 8, 24, LCD_DISP_RED,  LCD_DISP_BLACK );
+				// LCD_DisplayOneInt((int)tdata[0].len, 48, 24, LCD_DISP_RED, LCD_DISP_BLACK,5);
+
+				// LCD_DisplayStr((uint8_t *)"T2 = ", 102, 24, LCD_DISP_RED,  LCD_DISP_BLACK );
+				// LCD_DisplayOneInt((int)tdata[1].len, 142, 24, LCD_DISP_RED, LCD_DISP_BLACK,5);
+
+				// LCD_DisplayStr((uint8_t *)"T3 = ", 196, 24, LCD_DISP_RED,  LCD_DISP_BLACK );
+				// LCD_DisplayOneInt((int)tdata[2].len, 236, 24, LCD_DISP_RED, LCD_DISP_BLACK,5);
+				
+				// LCD_DisplayStr((uint8_t *)"tFlag = ", 286, 24, LCD_DISP_RED,  LCD_DISP_BLACK );
+				// LCD_DisplayOneInt((int)tflag, 350, 24, LCD_DISP_RED, LCD_DISP_BLACK,5);
+
+				// lcd_line = 56;
+
+				if (ret == SUCCESS)		
+				{
+					for (i = 0; i < MAX_TRACK_NUM; i++)
+					{
+						if (tdata[i].len)
+						{
+							printf("T%d decode data:\n", (int)(i+1));
+							// LCD_DisplayStr((uint8_t *)"T  decode data:", 8, lcd_line, LCD_DISP_RED,  LCD_DISP_BLACK );
+							// LCD_DisplayOneChar((unsigned char)(i + 1) & 0x0F, 16, lcd_line, LCD_DISP_RED, LCD_DISP_BLACK);
+							// lcd_line = lcd_line + 16; //LCD_FONT_H
+
+							for (j = 0; j < tdata[i].len; j++)
+							{
+								putchar(tdata[i].buf[j]);
+							}
+							// LCD_DisplayStr( &tdata[i].buf[0], 8, lcd_line, LCD_DISP_GREEN,  LCD_DISP_BLACK );
+
+							printf("\r\n");
+							// lcd_line = lcd_line + 16;
+							// lcd_line = lcd_line + 16;
+
+						}
+
+						// printf("\n\rT%d raw data:\r\n", (int)(i+1));
+						// get_track_raw_data(raw_data_buf, i);
+
+						// for(j=0;j < 256; j++)
+						// {
+						// 	printf("%02X",raw_data_buf[j]);
+						// }
+
+					}
+					// beep(200);
+				}
+			}
+			break;
+
+			
+		case DETECT_HARD_WAKEUP:
+			sc_sleep();			
+			break;
+			
+		case DETECT_NO_SWIPING_CARD:
+		default:
+			break;
+		}
+
+        if(!isEmpty(&uart))
+		{
+			rxdata = pop(&uart);
+			Uart0_SendDatas(&rxdata,1);
+		}
+	}
+}
 // end of msr test
+
+// IFM test
+// mh1903_init.c
+
+#define IFM_VCC_5V_3V_PORT	GPIOH					
+#define IFM_VCC_1_8V_PORT	GPIOH					
+#define IFM_VCC_5V_3V_PIN	GPIO_Pin_1				
+#define IFM_VCC_1_8V_PIN	GPIO_Pin_0	
+
+void Select_IFM_VCC(void)
+{
+/*	
+#define IFM_VCC_5V_3V_PORT	GPIOH					
+#define IFM_VCC_1_8V_PORT	GPIOH					
+#define IFM_VCC_5V_3V_PIN	GPIO_Pin_1				
+#define IFM_VCC_1_8V_PIN	GPIO_Pin_0				
+*/	
+	GPIO_InitTypeDef  GPIO_InitStruct;
+
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_1;		// IFM_5V_3.3V_EN
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOH, &GPIO_InitStruct);			
+
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_0;		// IFM_1.8V_EN
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOH, &GPIO_InitStruct);
+	
+ 	GPIO_SetBits(IFM_VCC_1_8V_PORT,IFM_VCC_1_8V_PIN);					//In order to use the VCC_5V_3V, you have to set the 1.8V Pin to High.
+//	GPIO_ResetBits(VCC_1_8V_PORT,VCC_1_8V_PIN);					//In order to use the 1.8V, you have to set the VCC_5V_3V Pin to High.
+	
+	GPIO_SetBits(IFM_VCC_5V_3V_PORT,IFM_VCC_5V_3V_PIN);		//5V select	
+//	GPIO_ResetBits(IFM_VCC_5V_3V_PORT,IFM_VCC_5V_3V_PIN);		//3V select
+}
+
+void IFM_SCI0_NVICConfig(void)
+{
+	NVIC_InitTypeDef NVIC_InitStructure;
+    
+    NVIC_SetPriorityGrouping(NVIC_PriorityGroup_0);
+    
+    NVIC_InitStructure.NVIC_IRQChannel = SCI0_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
+}
+
+// IFM port init
+void IFM_SCI0_IOConfig(void)
+{
+	GPIO_PinRemapConfig(GPIOA, GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10, GPIO_Remap_0); //ALT0
+    //card detect
+    SYSCTRL->PHER_CTRL &= ~BIT(16); // SCI0 card detection signal -> 0 : active high (1: ative low)
+//    SYSCTRL->PHER_CTRL |= BIT(16);
+    //Choose active level(Low level active).
+    SYSCTRL->PHER_CTRL |= BIT(20);  // SCI0 VCC effective signal level selection -> 1 : active low (0: active high)
+}
+
+// IFM configuration
+void IFM_Configuration(void)
+{
+	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_SCI0, ENABLE);
+    SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_SCI0, ENABLE);
+
+	IFM_SCI0_IOConfig();
+
+	Select_IFM_VCC();
+	SCI_ConfigEMV(0x01, 3000000);
+
+	//SCI_NVICConfig();	
+	IFM_SCI0_NVICConfig();
+}
+
+//--------------------------
+#if 0
+// org
+#define VCC_5V_3V_PORT	GPIOA
+#define VCC_1_8V_PORT	GPIOF
+#define VCC_5V_3V_PIN	GPIO_Pin_11
+#define VCC_1_8V_PIN	GPIO_Pin_8
+
+void Select_EMV_VCC(void)
+{
+/*	
+#define VCC_5V_3V_PORT	GPIOA
+#define VCC_1_8V_PORT	GPIOF
+#define VCC_5V_3V_PIN	GPIO_Pin_11
+#define VCC_1_8V_PIN	GPIO_Pin_8	
+*/	
+	GPIO_InitTypeDef  GPIO_InitStruct;
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_11;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_8;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOF, &GPIO_InitStruct);
+	
+ 	GPIO_SetBits(VCC_1_8V_PORT,VCC_1_8V_PIN);					//In order to use the VCC_5V_3V, you have to set the 1.8V Pin to High.
+//	GPIO_ResetBits(VCC_1_8V_PORT,VCC_1_8V_PIN);					//In order to use the 1.8V, you have to set the VCC_5V_3V Pin to High.
+	
+	GPIO_SetBits(VCC_5V_3V_PORT,VCC_5V_3V_PIN);		//5V select	
+//	GPIO_ResetBits(VCC_5V_3V_PORT,VCC_5V_3V_PIN);		//3V select
+
+}
+
+void SCI_NVICConfig(void)
+{
+	NVIC_InitTypeDef NVIC_InitStructure;
+    
+    NVIC_SetPriorityGrouping(NVIC_PriorityGroup_0);
+    
+    NVIC_InitStructure.NVIC_IRQChannel = SCI0_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
+}
+
+#define VCC_5V_3V_PORT	GPIOH					
+#define VCC_1_8V_PORT	GPIOH					
+#define VCC_5V_3V_PIN	GPIO_Pin_1				
+#define VCC_1_8V_PIN	GPIO_Pin_0	
+
+// void Select_EMV_VCC(void)
+// {
+// /*	
+// #define VCC_5V_3V_PORT	GPIOA
+// #define VCC_1_8V_PORT	GPIOF
+// #define VCC_5V_3V_PIN	GPIO_Pin_11
+// #define VCC_1_8V_PIN	GPIO_Pin_8	
+// */	
+// 	GPIO_InitTypeDef  GPIO_InitStruct;
+// 	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_1;
+// 	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+// 	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+// 	GPIO_Init(GPIOH, &GPIO_InitStruct);
+
+
+// 	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_0;
+// 	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+// 	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+// 	GPIO_Init(GPIOH, &GPIO_InitStruct);
+	
+//  	GPIO_SetBits(VCC_1_8V_PORT,VCC_1_8V_PIN);					//In order to use the VCC_5V_3V, you have to set the 1.8V Pin to High.
+// //	GPIO_ResetBits(VCC_1_8V_PORT,VCC_1_8V_PIN);					//In order to use the 1.8V, you have to set the VCC_5V_3V Pin to High.
+	
+// 	GPIO_SetBits(VCC_5V_3V_PORT,VCC_5V_3V_PIN);		//5V select	
+// //	GPIO_ResetBits(VCC_5V_3V_PORT,VCC_5V_3V_PIN);		//3V select
+
+// }
+
+void SCI_IOConfig(void)
+{
+    GPIO_PinRemapConfig(GPIOA, GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10, GPIO_Remap_0);
+
+    //card detect
+    SYSCTRL->PHER_CTRL &= ~BIT(16);
+//    SYSCTRL->PHER_CTRL |= BIT(16);
+    //Choose active level(Low level active).
+    SYSCTRL->PHER_CTRL |= BIT(20);
+
+}
+
+void SCI_Configuration(void)
+{
+	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_SCI0, ENABLE);
+    SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_SCI0, ENABLE);
+
+	SCI_IOConfig();
+
+	Select_EMV_VCC();
+	SCI_ConfigEMV(0x01, 3000000);
+
+	SCI_NVICConfig();	
+}
+#endif
+//--------------------------
+
+// SAM configuration
+// void SAM_Configuration(void)
+// {
+// 	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_SCI2, ENABLE);
+//     SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_SCI2, ENABLE);
+
+// 	SAM_SCI2_IOConfig();
+
+// 	Select_SAM_VCC();
+// 	SCI_ConfigEMV(0x01, 3000000);
+
+// 	//SCI_NVICConfig();	
+// 	SAM_SCI2_NVICConfig();
+// }
+//
+
+void GetCreditCardNumber()
+{
+	int lcd_line = 56;
+	uint8_t i;
+	
+	for(i=0;i<200;i++) Valid_Credit_Number[i]=0;
+	Valid_Credit_Len=0;
+	
+	Valid_Credit_Len=SCI_Test(Valid_Credit_Number);
+	
+	memcpy(ValidNumber,Valid_Credit_Number,4);
+	Valid_Credit_Len-=4;
+	memcpy(CreditNumber,Valid_Credit_Number,Valid_Credit_Len);
+	
+    printf("Valid_Credit_Len %d\n", Valid_Credit_Len);
+    // for (i=0; i<4; i++)
+    //     printf("[%d]", ValidNumber[i]);
+
+    // for (i=0; i<(Valid_Credit_Len-4); i++)
+    //     printf("[%d]", CreditNumber[i]);
+    
+	// LCD_DisplayColor(LCD_DISP_BLACK);
+	
+	// LCD_DisplayStr((uint8_t *)"Credit Card Valid Data / Credit Number.. ", 8, 24, LCD_DISP_GREEN,  LCD_DISP_BLACK );	
+	
+	// LCD_DisplayStr((uint8_t *)"Valid Data:", 8, lcd_line, LCD_DISP_CYAN,  LCD_DISP_BLACK );
+	// lcd_line+=16;
+	// LCD_DisplayStr(ValidNumber, 8, lcd_line, LCD_DISP_YELLOW,  LCD_DISP_BLACK );
+	
+	// lcd_line+=32;
+	// LCD_DisplayStr((uint8_t *)"Credit Number:", 8, lcd_line, LCD_DISP_CYAN ,  LCD_DISP_BLACK );
+	// lcd_line+=16;
+	// LCD_DisplayStr(&CreditNumber[4], 8, lcd_line, LCD_DISP_YELLOW,  LCD_DISP_BLACK );	
+	
+	
+	// lcd_line+=32;
+	// LCD_DisplayStr((uint8_t *)"Remove and Insert IC Card Again...!! ", 8, lcd_line, LCD_DISP_MAGENTA,  LCD_DISP_BLACK );	
+}
+
+void IFM_test(void)
+{
+    printf("\nIFM test..\n");
+    //IFM_Power_On(0);
+    IC_CARD_detection(0);       //domyst
+    while (1)
+    //while(old_count == button_count)
+	{
+		GetCreditCardNumber();
+	}
+}
+// end of IFM test 
+
+void bios_test(void)
+{
+    uint8_t rxdata;
+
+    printf("\r\n bios test..\n");
+    while(1)
+    {
+        if(!isEmpty(&uart))
+        {
+            rxdata = pop(&uart);
+            Uart0_SendDatas(&rxdata,1);
+            switch (rxdata)
+            {
+                case 'm':
+                    printf("\nmsr test");
+                    MSR_test();
+                    break;
+                case 'i':
+                    printf("\nifm test");
+                    IFM_Power_On(1);
+                    IFM_test();
+                    break;
+                case 'l':
+                    printf("\nloopback test");
+                    IFM_Power_On(1);
+                    loop_back(0);
+                    break;
+                case '0':
+                    printf("\nifm_power_off");
+                    IFM_Power_On(0);
+                    break;
+                case '1':
+                    printf("\nifm_power_on");
+                    IFM_Power_On(1);
+                    break;
+                case '?':
+                    printf("\n 'm' : msr test");
+                    printf("\n 'i' : ifm test");
+                    printf("\n 'l' : ifm loopback test");
+                    printf("\n '0' : ifm power off test");
+                    printf("\n '1' : ifm power on test");
+                    // printf("\n 1 : msr test");
+                    // printf("\n 1 : msr test");
+                    break;
+            }
+        }
+    }
+}

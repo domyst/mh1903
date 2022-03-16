@@ -10,7 +10,7 @@
 #include "calibration.h"
 #include "fnd.h"
 #include "ProjectConfig.h"
-#include "DecodeLib.h"
+//#include "DecodeLib.h"
 #include "test_emv.h"
 #include "emv_core.h"
 #include "iso7816_3.h"
@@ -19,6 +19,9 @@
 #include "uart.h"
 #include "CreditCard_lib.h"
 
+//
+#define delay_us(usec)		udelay(usec)
+#define delay_ms(msec)		mdelay(msec)
 
 #define SAM_VCC_5V_3V_PORT	GPIOH					
 #define SAM_VCC_1_8V_PORT	GPIOH					
@@ -53,8 +56,10 @@ void Select_SAM_VCC(void)
 
 }
 
-void IFM_Power_On(uint8_t data)
+void IFM_Power_On(uint8_t data)		// active high
 {
+	//printf("%d, %s \n\r",data, __func__);
+	//printf("------------------\n");
 	GPIO_InitTypeDef  GPIO_InitStruct;
 	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_5;
 	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
@@ -65,6 +70,22 @@ void IFM_Power_On(uint8_t data)
 		GPIO_SetBits(GPIOA, GPIO_Pin_5);
 	else
 		GPIO_ResetBits(GPIOA, GPIO_Pin_5);
+}
+
+void IC_CARD_detection(uint8_t data)		// active high
+{
+	//printf("%d, %s \n\r",data, __func__);
+	//printf("------------------\n");
+	GPIO_InitTypeDef  GPIO_InitStruct;
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_13;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOH, &GPIO_InitStruct);
+
+	if (data == 1)
+		GPIO_SetBits(GPIOH, GPIO_Pin_13);
+	else
+		GPIO_ResetBits(GPIOH, GPIO_Pin_13);
 }
 
 void SAM_IOConfig(void)
