@@ -480,6 +480,17 @@ void MSR_test(void)
 	//while(old_count == button_count)
     while (1)
 	{
+        //
+        if(!isEmpty(&uart))
+        {
+            rxdata = pop(&uart);
+            Uart0_SendDatas(&rxdata,1);
+            switch (rxdata)
+            {
+                case 'x': return;
+            }
+        }
+        //
 		switch (detect_swiping_card())
 		{
 		case DETECT_SWIPING_CARD:
@@ -843,6 +854,58 @@ void IFM_test(void)
 }
 // end of IFM test 
 
+void sensor_test(void)
+{
+    uint8_t rxdata, ret;
+
+    printf("\r\n sensor test..\n");
+    while(1)
+    {
+        if(!isEmpty(&uart))
+        {
+            rxdata = pop(&uart);
+            Uart0_SendDatas(&rxdata,1);
+            switch (rxdata)
+            {
+                case 'f':
+                    printf("\n front sensor");
+                    ret = read_front_sensor();
+                    printf("read : %d\n", ret);
+                    break;
+                case 'r':
+                    printf("\n rear sensor");
+                    ret = Read_card_end_sensor();
+                    printf("read : %d\n", ret);
+                    break;
+                case 'i':
+                    printf("\n inner sensor");
+                    ret = read_inner_sensor();
+                    printf("read : %d\n", ret);
+                    break;
+                case 's':
+                    printf("\n solenoid lock sensor");
+                    ret = Read_solenoid_lock_sensor();
+                    printf("read : %d\n", ret);
+                    break;
+                case 'a':
+                    printf("\n anti skimming detect sensor");
+                    ret = Read_anti_skimming_detect_sensor();
+                    printf("read : %d\n", ret);
+                    break;
+                case 'x':
+                    return;
+                case '?':
+                    printf("\n 'f' : front sensor");
+                    printf("\n 'r' : rear sensor");
+                    printf("\n 'i' : inner sensor");
+                    printf("\n 's' : solenoid lock sensor");
+                    printf("\n 'a' : anti skimming detect sensor");
+                    break;
+            }
+        }
+    }
+}
+
 void bios_test(void)
 {
     uint8_t rxdata;
@@ -857,33 +920,40 @@ void bios_test(void)
             switch (rxdata)
             {
                 case 'm':
-                    printf("\nmsr test");
+                    printf("\n msr test");
                     MSR_test();
                     break;
                 case 'i':
-                    printf("\nifm test");
+                    printf("\n ifm test");
                     IFM_Power_On(1);
                     IFM_test();
                     break;
                 case 'l':
-                    printf("\nloopback test");
+                    printf("\n loopback test");
                     IFM_Power_On(1);
                     loop_back(0);
                     break;
                 case '0':
-                    printf("\nifm_power_off");
+                    printf("\n ifm_power_off");
+                    // IC_CARD_detection(0);
                     IFM_Power_On(0);
                     break;
                 case '1':
-                    printf("\nifm_power_on");
+                    printf("\n ifm_power_on");
+                    // IC_CARD_detection(0);
                     IFM_Power_On(1);
                     break;
+                case 's':
+                    printf("\n sensor test");
+                    sensor_power_on(1);
+                    sensor_test();
                 case '?':
                     printf("\n 'm' : msr test");
                     printf("\n 'i' : ifm test");
                     printf("\n 'l' : ifm loopback test");
                     printf("\n '0' : ifm power off test");
                     printf("\n '1' : ifm power on test");
+                    printf("\n 's' : sensor test");
                     // printf("\n 1 : msr test");
                     // printf("\n 1 : msr test");
                     break;

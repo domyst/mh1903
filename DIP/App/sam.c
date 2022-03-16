@@ -463,3 +463,20 @@ void msr_rst(void)
     Delay_Ms(40);
     GPIO_SetBits(GPIOB, GPIO_Pin_3);     
 }
+
+void sensor_power_on(uint8_t data)
+{
+//printf("%d, %s \n\r",data, __func__);
+	//printf("------------------\n");
+	GPIO_InitTypeDef  GPIO_InitStruct;
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_0;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+	if (data == 1)
+		GPIO_SetBits(GPIOB, GPIO_Pin_0);
+	else
+		GPIO_ResetBits(GPIOB, GPIO_Pin_0);
+
+}
