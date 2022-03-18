@@ -232,6 +232,18 @@ void EXTI0_IRQHandler(void)
 // rear sensor, pc12 external interrupt
 void EXTI2_IRQHandler(void)		// domyst
 {
+	printf("EXTI2_IRQHandler In\r\n");
+	
+	// EXTI_ClearITPendingBit(EXTI_Line2);		// clear x 여러번 들어옴 domyst
+	// NVIC_ClearPendingIRQ(EXTI2_IRQn);
+	
+	if (EXTI_GetITLineStatus(EXTI_Line2) != RESET)
+	{	
+		printf("in\n");
+		// domyst 컴파일 에러 나중 원복 E_CmdProc(200);
+		//EXTI_ClearITPendingBit(EXTI_Line6);
+		EXTI_ClearITPendingBit(EXTI_Line2);
+	}
 	#if 0 // domyst 컴파일 후 원복
 	extern uint8_t	button_count;
 	uint8_t	i;

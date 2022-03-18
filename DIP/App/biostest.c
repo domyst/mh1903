@@ -592,11 +592,11 @@ void MSR_test(void)
 			break;
 		}
 
-        if(!isEmpty(&uart))
-		{
-			rxdata = pop(&uart);
-			Uart0_SendDatas(&rxdata,1);
-		}
+        // if(!isEmpty(&uart))
+		// {
+		// 	rxdata = pop(&uart);
+		// 	Uart0_SendDatas(&rxdata,1);
+		// }
 	}
 }
 // end of msr test
@@ -843,13 +843,26 @@ void GetCreditCardNumber()
 
 void IFM_test(void)
 {
+	uint8_t rxdata;
     printf("\nIFM test..\n");
     //IFM_Power_On(0);
     IC_CARD_detection(0);       //domyst
     while (1)
     //while(old_count == button_count)
 	{
+		if(!isEmpty(&uart))
+        {
+            rxdata = pop(&uart);
+            Uart0_SendDatas(&rxdata,1);
+            switch (rxdata)
+            {
+                case 'x': return;
+				case 'i': IC_CARD_detection(0); break;
+            }
+        }
 		GetCreditCardNumber();
+		IC_CARD_detection(1);
+		printf("---\n");
 	}
 }
 // end of IFM test 
@@ -942,6 +955,110 @@ void led_test(void)
     }
 }
 
+void external_int_test(void)
+{
+	// rear sensor, pc12, card remove
+	NVIC_InitTypeDef NVIC_InitStructure;
+	GPIO_InitTypeDef GPIO_InitStruct;
+
+	printf("\n ext int test");
+	NVIC_SetPriorityGrouping(NVIC_PriorityGroup_2);
+	
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI2_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+	
+	EXTI_LineConfig(EXTI_Line2, EXTI_PinSource12, EXTI_Trigger_Falling);
+
+	//
+	//GPIO_InitTypeDef GPIO_InitStruct;
+	
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPU;
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_12;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOC, &GPIO_InitStruct);
+}
+// pwd test
+
+
+
+// end of pwm
+// void pwm_test1(void)
+// {
+// 	printf("pwm test\n");
+// 	TimerPWMSetStructInit();
+// 	TIMER_Configuration1();
+
+// 	TIM_PWMSinglePulseConfig(TIMM0, TIM_3, ENABLE);
+//     TIM_Cmd(TIMM0, TIM_3, ENABLE);
+
+// 	PrintSet();
+// }
+
+// void pwm_test2(void)
+// {
+// 	printf("pwm test\n");
+// 	TimerPWMSetStructInit();
+// 	TIMER_Configuration1();
+
+// 	//TIM_PWMSinglePulseConfig(TIMM0, TIM_3, ENABLE);
+// 	//TIMER_PWMSet();
+//     TIM_Cmd(TIMM0, TIM_3, ENABLE);
+
+// 	PrintSet();
+// }
+
+void sol_power_on(uint8_t data)
+{
+	GPIO_InitTypeDef  GPIO_InitStruct;
+
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_3;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+	if (data == 1)
+		GPIO_SetBits(GPIOA, GPIO_Pin_3);
+	else
+		GPIO_ResetBits(GPIOA, GPIO_Pin_3);
+}
+
+void eeprom_test(void)
+{
+	uint8_t rxdata, ret;
+	printf("eeprom test..\n");
+
+	while (1)
+	{
+		if(!isEmpty(&uart))
+        {
+            rxdata = pop(&uart);
+            Uart0_SendDatas(&rxdata,1);
+            switch (rxdata)
+            {
+                case 'r':
+                    printf("\n eeprom read");
+                    ret = AT24Cxx_ReadOneByte(0x00);
+					printf("ret[%02X]\n", ret);
+                    break;
+				case 'w':
+					printf("\n eeprom write");
+					AT24Cxx_WriteOneByte(0x00, 0xA5);
+					break;
+                case 'i':
+                    printf("\n find device");
+                    AT24Cxx_FindDevice();
+                    break;
+				case 'x':
+					return;
+			}
+		}
+	}
+	
+}
+
 void bios_test(void)
 {
     uint8_t rxdata;
@@ -988,6 +1105,22 @@ void bios_test(void)
                     //printf("\n led test");
                     led_test();
                     break;
+				case '5':
+					sensor_power_on(1);
+					external_int_test();
+					break;
+				case '6':
+					pwm_test();
+					break;
+				case '7':
+					sol_power_on(0);
+					break;
+				case '8':
+					sol_power_on(1);
+					break;
+				case 'e':
+					eeprom_test();
+					break;
                 case '?':
                     printf("\n 'm' : msr test");
                     printf("\n 'i' : ifm test");
@@ -996,8 +1129,11 @@ void bios_test(void)
                     printf("\n '1' : ifm power on test");
                     printf("\n 's' : sensor test");
                     printf("\n '3' : led test");
+					printf("\n '5' : external int");
+					printf("\n '6' : pwm test");
                     // printf("\n 1 : msr test");
                     // printf("\n 1 : msr test");
+					printf("\n 'e' : eeprom test");
                     break;
             }
         }
