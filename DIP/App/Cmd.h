@@ -150,74 +150,47 @@
 
   #define STAT_B        (*(volatile unsigned char *)(0x20000000))
     // bit 0
-    // #define IS_SAM1		        gSTAT_B |= 0x01                 //(*(volatile unsigned long *)(0x22000000)) = 1
-    // #define Non_SAM1	        gSTAT_B &= ~0x01                //(*(volatile unsigned long *)(0x22000000)) = 0
-    // #define IS_SAM1_IN	        (gSTAT_B&0x01)                  //(*(volatile unsigned long *)(0x22000000))
     #define IS_SAM1             (*(volatile unsigned long *)(0x22000000)) = 1
     #define Non_SAM1            (*(volatile unsigned long *)(0x22000000)) = 0
     #define IS_SAM1_IN          (*(volatile unsigned long *)(0x22000000))
 
     // bit 1
-    // #define IS_SAM2		        gSTAT_B |= 0x02                 //(*(volatile unsigned long *)(0x22000004)) = 1
-    // #define Non_SAM2	        gSTAT_B &= ~0x02                //(*(volatile unsigned long *)(0x22000004)) = 0
-    // #define IS_SAM2_IN	        ((gSTAT_B>>1)&0x01)             //(*(volatile unsigned long *)(0x22000004))   
     #define IS_SAM2             (*(volatile unsigned long *)(0x22000004)) = 1
     #define Non_SAM2            (*(volatile unsigned long *)(0x22000004)) = 0
     #define IS_SAM2_IN          (*(volatile unsigned long *)(0x22000004))
 
     // bit 2
-    // #define IS_SAM3		        gSTAT_B |= 0x04                 //(*(volatile unsigned long *)(0x22000008)) = 1
-    // #define Non_SAM3	        gSTAT_B &= ~0x04                //(*(volatile unsigned long *)(0x22000008)) = 0
-    // #define IS_SAM3_IN	        ((gSTAT_B>>2)&0x01)             //(*(volatile unsigned long *)(0x22000008))
     #define IS_SAM3             (*(volatile unsigned long *)(0x22000008)) = 1
     #define Non_SAM3            (*(volatile unsigned long *)(0x22000008)) = 0
     #define IS_SAM3_IN          (*(volatile unsigned long *)(0x22000008))
 
     // bit 3
-    // #define IS_SAM4 	        gSTAT_B |= 0x08                 //(*(volatile unsigned long *)(0x2200000C)) = 1
-    // #define Non_SAM4 	        gSTAT_B &= ~0x08                //(*(volatile unsigned long *)(0x2200000C)) = 0
-    // #define IS_SAM4_IN 	        ((gSTAT_B>>3)&0x01)             //(*(volatile unsigned long *)(0x2200000C))
     #define IS_SAM4             (*(volatile unsigned long *)(0x2200000C)) = 1
     #define Non_SAM4            (*(volatile unsigned long *)(0x2200000C)) = 0
     #define IS_SAM4_IN          (*(volatile unsigned long *)(0x2200000C))
 
     // bit 4
-    // #define IS_MS_DATA 			gSTAT_B |= 0x10                 //(*(volatile unsigned long *)(0x22000010)) = 1
-    // #define Non_MS_DATA 		gSTAT_B &= ~0x10                //(*(volatile unsigned long *)(0x22000010)) = 0
-    // #define MS_DATA_IN 			((gSTAT_B>>4)&0x01)             //(*(volatile unsigned long *)(0x22000010))
     #define IS_MS_DATA          (*(volatile unsigned long *)(0x22000010)) = 1
     #define Non_MS_DATA         (*(volatile unsigned long *)(0x22000010)) = 0
     #define MS_DATA_IN          (*(volatile unsigned long *)(0x22000010))
 
     // bit 5
-    // #define IC_Reset_ON         gSTAT_B |= 0x20                 //(*(volatile unsigned long *)(0x22000014)) = 1
-    // #define NO_ICC_Reset        gSTAT_B &= ~0x20                //(*(volatile unsigned long *)(0x22000014)) = 0
-    // #define ICC_Reset_IN        ((gSTAT_B>>5)&0x01)             //(*(volatile unsigned long *)(0x22000014))
     #define IC_Reset_ON         (*(volatile unsigned long *)(0x22000014)) = 1
     #define NO_ICC_Reset        (*(volatile unsigned long *)(0x22000014)) = 0
     #define ICC_Reset_IN        (*(volatile unsigned long *)(0x22000014))
 
     // bit 6
-    // #define Front_Detect_ON     gSTAT_B |= 0x40                 //(*(volatile unsigned long *)(0x22000018)) = 1
-    // #define Front_Detect_Non    gSTAT_B &= ~0x40                //(*(volatile unsigned long *)(0x22000018)) = 0
-    // #define Front_Detect_IN     ((gSTAT_B>>7)&0x01)             //(*(volatile unsigned long *)(0x22000018))
     #define Front_Detect_ON     (*(volatile unsigned long *)(0x22000018)) = 1
     #define Front_Detect_Non    (*(volatile unsigned long *)(0x22000018)) = 0
     #define Front_Detect_IN     (*(volatile unsigned long *)(0x22000018))
 
     // bit 7
-    // #define Rear_Detect_ON      gSTAT_B |= 0x80                 //(*(volatile unsigned long *)(0x2200001C)) = 1
-    // #define Rear_Detect_Non     gSTAT_B &= ~0x80                //(*(volatile unsigned long *)(0x2200001C)) = 0
-    // #define Rear_Detect_IN      ((gSTAT_B>>7)&0x01)             //(*(volatile unsigned long *)(0x2200001C))
     #define Rear_Detect_ON      (*(volatile unsigned long *)(0x2200001C)) = 1
     #define Rear_Detect_Non     (*(volatile unsigned long *)(0x2200001C)) = 0
     #define Rear_Detect_IN      (*(volatile unsigned long *)(0x2200001C))
 
   #define STAT2_B       (*(volatile unsigned char *)(0x20000001))
     // bit 0
-    // #define MS_F_Read_ON        gSTAT2_B |= 0x01                //(*(volatile unsigned long *)(0x22000020)) = 1
-    // #define MS_R_Read_ON        gSTAT2_B &= ~0x01               //(*(volatile unsigned long *)(0x22000020)) = 0
-    // #define MS_Read_IN          (gSTAT2_B&0x01)                 //(*(volatile unsigned long *)(0x22000020))
     #define MS_F_Read_ON        (*(volatile unsigned long *)(0x22000020)) = 1
     #define MS_R_Read_ON        (*(volatile unsigned long *)(0x22000020)) = 0
     #define MS_Read_IN          (*(volatile unsigned long *)(0x22000020))

@@ -1,29 +1,29 @@
-/*******************************(C) COPYRIGHT 2007 INSEM Inc.****************************************/
-/* processor 	  :          		    				    */
-/* compiler       : 								    */
-/* program by	  : 								    */
-/* History:											    */
-/* 04/13/2007     : Version 1.0									    */
-/* copy right	  : 									    */
-/****************************************************************************************************/
+/************************ (C) COPYRIGHT TITENG *******************************
+ * @file                : mh1903_init.c
+ * @author              : 
+ * @version             : V1.0.0
+ * @date                : 
+ * @brief               : This file provides all the SYSCTRL firmware functions
+ *****************************************************************************/  
+
 #define __MH1903_H__    // domyst check
 
-#include "stm32f10x.h"
+// #include "stm32f10x.h"
 
 #include "main.h"
 //#include "Cmd.h"
 
 #include "mhscpu_dma.h"     //domyst
 
-#include "usb_lib.h"
-#include "usb_core.h"
-#include "usb_desc.h"
-#include "usb_prop.h"
-#include "usb_pwr.h"
+// #include "usb_lib.h"
+// #include "usb_core.h"
+// #include "usb_desc.h"
+// #include "usb_prop.h"
+// #include "usb_pwr.h"
 
 
 // emv core header
-#include "emv_core.h"
+// #include "emv_core.h"
 //
 /* Private macro -------------------------------------------------------------*/
 #define IFM_VCC_5V_3V_PORT	GPIOH					
@@ -133,150 +133,8 @@ void Gp_initial(void){
 }
 #endif
 
-/******************************************************************************************************/
-/* PLL_initial	:	 Configures the system clocks.						      */												
-/******************************************************************************************************/
-void PLL_initial(void) {	//PLL configuration
-  /* SYSCLK, HCLK, PCLK2 and PCLK1 configuration -----------------------------*/
-  /* RCC system reset(for debug purpose) */
-  RCC_DeInit();
-
-  /* Enable HSE */
-  RCC_HSEConfig(RCC_HSE_ON);
-
-  /* Wait till HSE is ready */
-  while(RCC_GetFlagStatus(RCC_FLAG_HSERDY) == RESET)
-  {
-  }
- #if defined STM32F100_ENABLE
-// flash access wait time
-// 0 = Zero wait state, if 0 < SYSCLK≤ 24 MHz
-// 1 = One wait state,  if 24 MHz < SYSCLK ≤ 48 MHz
-// 2 = Two wait states, if 48 MHz < SYSCLK ≤ 72 MHz
-
- /* Flash 1 wait state */
-  //FLASH_SetLatency(FLASH_Latency_1);
-
-  /* HCLK = MAX SYSCLK = 24MHz/1 = 24MHz */
-  RCC_HCLKConfig(RCC_SYSCLK_Div1);
-
-  /* configure MAX PCLK2 = 24MHz/1 = 24MHz */
-  RCC_PCLK2Config(RCC_HCLK_Div1);
-
-  /* configure MAX PCLK1 = 24MHz/1 = 24MHz */
-  RCC_PCLK1Config(RCC_HCLK_Div1);
-
-  /* configure MAX PLLCLK = 8MHz/1 * 3 = 24MHz */
-  RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_3);
-#endif
-#if defined STM32F101_ENABLE
-// flash access wait time
-// 0 = Zero wait state, if 0 < SYSCLK≤ 24 MHz
-// 1 = One wait state,  if 24 MHz < SYSCLK ≤ 48 MHz
-// 2 = Two wait states, if 48 MHz < SYSCLK ≤ 72 MHz
-
- /* Flash 1 wait state */
-  FLASH_SetLatency(FLASH_Latency_1);
-
-  /* HCLK = MAX SYSCLK = 36MHz/1 = 36MHz */
-  RCC_HCLKConfig(RCC_SYSCLK_Div1);
-
-  /* configure MAX PCLK2 = 36MHz/1 = 36MHz */
-  RCC_PCLK2Config(RCC_HCLK_Div1);
-
-  /* configure MAX PCLK1 = 36MHz/1 = 36MHz */
-  RCC_PCLK1Config(RCC_HCLK_Div1);
-
-  /* configure MAX PLLCLK = 8MHz/2 * 9 = 36MHz */
-  RCC_PLLConfig(RCC_PLLSource_HSE_Div2, RCC_PLLMul_9);
-
-#endif
-#if defined STM32F102_ENABLE
-
- /* Flash 1 wait state */
-  FLASH_SetLatency(FLASH_Latency_1);
-
-  /* HCLK = MAX SYSCLK = 48MHz/1=48MHz */
-  RCC_HCLKConfig(RCC_SYSCLK_Div1);
-
-  /* configure MAX PCLK2 = 48MHz/1=48MHz */
-  RCC_PCLK2Config(RCC_HCLK_Div1);
-
-  /* configure MAX PCLK1 = 48MHz/2=24MHz */
-  RCC_PCLK1Config(RCC_HCLK_Div2);
-
-  /* configure MAX PLLCLK = 8MHz/1 * 6 =48MHz */
-  RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_6);
-
-#endif
-#if defined STM32F103_ENABLE
-
- /* Flash 2 wait state */
-  FLASH_SetLatency(FLASH_Latency_2);
-
-  /* HCLK = MAX SYSCLK = 72MHz/1=72MHz*/
-  RCC_HCLKConfig(RCC_SYSCLK_Div1);
-
-  /* configure MAX PCLK2 = 72MHz/1=72MHz */
-  RCC_PCLK2Config(RCC_HCLK_Div1);
-
-  /* configure MAX PCLK1 = 72MHz/2=36MHz */
-  RCC_PCLK1Config(RCC_HCLK_Div2);
-
-  /* configure MAX PLLCLK = 12MHz/1 * 6= 72MHz */
-  /// always [2010/11/18] 만약 외부 클럭이 변할 시 stm32f103_conf.h에 있는 HSE 값도 바꿔 주어야 한다.
-  RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_6);
-
-#endif
-
-  /* Enable PLL */
-  RCC_PLLCmd(ENABLE);
-
-  /* Wait till PLL is ready */
-  while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET)
-  {
-  }
-
-  /* Select PLL as system clock source */
-  RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
-
-  /* Wait till PLL is used as system clock source */
-  while(RCC_GetSYSCLKSource() != 0x08)
-  {
-  }
-
-  /* Enable Prefetch Buffer */
-  FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);
-
-  /* This function fills a RCC_ClocksTypeDef structure with the current
-     frequencies of different on chip clocks (for debug purpose) */
-  RCC_GetClocksFreq(&RCC_ClockFreq);
-
-  /* Enable Clock Security System(CSS) */
-  RCC_ClockSecuritySystemCmd(ENABLE);
-
-}
-/******************************************************************************************************/
-/* NVIC_initial	:	vector configuration   					                      */												
-/******************************************************************************************************/
-void NVIC_initial(void){
-
-#ifdef  VECT_TAB_RAM
-  /* Set the Vector Table base location at 0x20000000 */
-  NVIC_SetVectorTable(NVIC_VectTab_RAM, 0x0);
-#else  /* VECT_TAB_FLASH  */
-  /* Set the Vector Table base location at 0x08000000 */
-  NVIC_SetVectorTable(NVIC_VectTab_FLASH, VECT_TAB_OFFSET); // jsshin 2015.08.18!!! vector table offset remap!!!
-#endif
-
-  /* Enable and configure RCC global IRQ channel */
-  NVIC_InitStructure.NVIC_IRQChannel = RCC_IRQn; //RCC_IRQChannel; // jsshin 2015.08.18 changed IRQ channel name at the StdLib 3.5
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 6;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-  NVIC_Init(&NVIC_InitStructure);
-
-}
+// domyst systick interval를 얼마로 해야 하나?
+#if 0	// SYSTICK_Init();로 대체함
 /******************************************************************************************************/
 /* SYSTICK_initial	:	SYSTICK_ configuration   					      */												
 /******************************************************************************************************/
@@ -295,6 +153,9 @@ void SYSTICK_initial(void)
 //-- jsshin 2015.08.18
 
 }
+#endif
+
+#if 0 //domyst
 /******************************************************************************************************/
 /* GPIO_port_initial	:								              */												
 /******************************************************************************************************/
@@ -585,9 +446,13 @@ void GPIO_port_initial_org(void)
 	GPIO_Init(GPIOE, &GPIO_InitStructure);
 
 }
+#endif
 
-// domyst
-// IFM port init
+/**
+  * @brief  Configure IFM Interface
+  * @param  None
+  * @retval None
+  */
 void IFM_SCI0_IOConfig(void)
 {
 	GPIO_PinRemapConfig(GPIOA, GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10, GPIO_Remap_0); //ALT0
@@ -598,7 +463,11 @@ void IFM_SCI0_IOConfig(void)
     SYSCTRL->PHER_CTRL |= BIT(20);  // SCI0 VCC effective signal level selection -> 1 : active low (0: active high)
 }
 
-// SAM port init
+/**
+  * @brief  Configure SAM Interface
+  * @param  None
+  * @retval None
+  */
 void SAM_SCI2_IOConfig(void)
 {
 	GPIO_PinRemapConfig(GPIOE, GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12, GPIO_Remap_0); //ALT0
@@ -609,6 +478,11 @@ void SAM_SCI2_IOConfig(void)
     SYSCTRL->PHER_CTRL |= BIT(22);  // SCI0 VCC effective signal level selection -> 1 : active low (0: active high)
 }
 
+/**
+  * @brief  Select the IFM VCC
+  * @param  None
+  * @retval None
+  */
 void Select_IFM_VCC(void)
 {
 /*	
@@ -636,6 +510,11 @@ void Select_IFM_VCC(void)
 //	GPIO_ResetBits(IFM_VCC_5V_3V_PORT,IFM_VCC_5V_3V_PIN);		//3V select
 }
 
+/**
+  * @brief  Select the SAM VCC
+  * @param  None
+  * @retval None
+  */
 void Select_SAM_VCC(void)
 {
 /*	
@@ -662,6 +541,11 @@ void Select_SAM_VCC(void)
 //	GPIO_ResetBits(SAM_VCC_5V_3V_PORT,VCC_5V_3V_PIN);		//3V select
 }
 
+/**
+  * @brief  Configure IMF interrupt
+  * @param  None
+  * @retval None
+  */
 void IFM_SCI0_NVICConfig(void)
 {
 	NVIC_InitTypeDef NVIC_InitStructure;
@@ -676,6 +560,11 @@ void IFM_SCI0_NVICConfig(void)
 
 }
 
+/**
+  * @brief  Configure SAM interrupt
+  * @param  None
+  * @retval None
+  */
 void SAM_SCI2_NVICConfig(void)
 {
 	NVIC_InitTypeDef NVIC_InitStructure;
@@ -690,7 +579,11 @@ void SAM_SCI2_NVICConfig(void)
 
 }
 
-// IFM configuration
+/**
+  * @brief  Configure IFM
+  * @param  None
+  * @retval None
+  */
 void IFM_Configuration(void)
 {
 	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_SCI0, ENABLE);
@@ -705,7 +598,11 @@ void IFM_Configuration(void)
 	IFM_SCI0_NVICConfig();
 }
 
-// SAM configuration
+/**
+  * @brief  Configure SAM
+  * @param  None
+  * @retval None
+  */
 void SAM_Configuration(void)
 {
 	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_SCI2, ENABLE);
@@ -720,8 +617,11 @@ void SAM_Configuration(void)
 	SAM_SCI2_NVICConfig();
 }
 
-// CPU_TXD2, CPU_RXD2 for debug, barcode
-// 0 for debug, 1 for barcode
+/**
+  * @brief  Select the UART channel
+  * @param  data: 0 for debug, 1 for barcode
+  * @retval None
+  */
 void UART2_select(uint8_t data)
 {
     GPIO_InitTypeDef  GPIO_InitStruct;
@@ -796,6 +696,48 @@ void MMD1100_MSR_Configuration(void)
     GPIO_PinRemapConfig(GPIOB, GPIO_Pin_2 | GPIO_Pin_4 | GPIO_Pin_5, GPIO_Remap_0); // GPIOE ??
 
     SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
+	SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;		// 확인 필 ??? 16에서 8로 수정함
+	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
+	SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
+	SPI_InitStructure.SPI_NSS = SPI_NSS_Null;			/*SPI_NSS_0*/
+	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256; // 확인 필??
+	SPI_InitStructure.SPI_RXFIFOFullThreshold = SPI_RXFIFOFullThreshold_1;
+	SPI_InitStructure.SPI_TXFIFOEmptyThreshold = SPI_TXFIFOEmptyThreshold_10;
+	
+	SPI_Init(SPIM2, &SPI_InitStructure);
+    SPI_Cmd(SPIM2, ENABLE);
+
+	// PB2	SPI_CLK		ALT0	// 클럭을 왜 설정하냐..지워라.
+	// GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	// GPIO_InitStruct.GPIO_Pin = GPIO_Pin_2;		// GPIO_Pin_2 | GPIO_Pin_4 | GPIO_Pin_5; ???
+	// GPIO_InitStruct.GPIO_Remap = GPIO_Remap_0;
+	// GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+	// PB1	Ready		ALT1  // ready 핀은 인터럽트로 처리할지 gpio로 할지 확인 필요함, GPIO_port_initial 코딩함
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_1;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPU;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+	// PB3	RST
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_3;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOB, &GPIO_InitStruct);
+}
+#if 0 // 코딩한게 이상함 확인하고 지워라
+void MMD1100_MSR_Configuration(void)
+{
+    SPI_InitTypeDef SPI_InitStructure;
+    GPIO_InitTypeDef GPIO_InitStruct;
+
+    // SPI2
+	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_SPI2, ENABLE);
+	SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_SPI2, ENABLE);
+
+    GPIO_PinRemapConfig(GPIOB, GPIO_Pin_2 | GPIO_Pin_4 | GPIO_Pin_5, GPIO_Remap_0); // GPIOE ??
+
+    SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
 	SPI_InitStructure.SPI_DataSize = SPI_DataSize_16b;		// 확인 필 ???
 	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
 	SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
@@ -839,7 +781,13 @@ void MMD1100_MSR_Configuration(void)
 	// GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;		//modified by domyst GPIO_Remap_1
 	// GPIO_Init(GPIOE, &GPIO_InitStruct);
 }
+#endif
 
+/**
+  * @brief  Initialize the GPIO port
+  * @param  None
+  * @retval None
+  */
 void GPIO_port_initial(void)
 {
 	GPIO_InitTypeDef  GPIO_InitStruct;
@@ -868,23 +816,21 @@ void GPIO_port_initial(void)
 	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
 	GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-	// MMD1100
+	// MMD1100, RST Pin  //???MMD1100_MSR_Configuration 처리했음 확인 후 지움
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_3;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
+	GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 	// EEPROM PG13, 14, 15
 
-	// IFM, SAM 1.8, 3, 5V
+	// IFM, SAM 1.8, 3, 5V	
 
-	// LED, MST
+	// LED, MST EN
 	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6;
 	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
 	GPIO_Init(GPIOH, &GPIO_InitStruct);
-
-	// MST
-	// GPIO_InitStruct.GPIO_Pin = GPIO_Pin_6;
-	// GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
-	// GPIO_InitStruct.GPIO_Remap = GPIO_Remap_1;
-	// GPIO_Init(GPIOH, &GPIO_InitStruct);
 
 	// CPU_MODE, USB DETECT, IC_CARD_DETECTION
 	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 \
@@ -1231,6 +1177,8 @@ void GPIO_port_initial(void)
 	GPIO_Init(GPIOE, &GPIO_InitStructure);
 #endif
 }
+
+#if 0 // timer 다 필요없다
 /******************************************************************************************************/
 /* TIME1_initial	:	Track 2							              */
 /* 0.03185sec time set. */
@@ -1472,6 +1420,106 @@ void TIME8_initial(void)
 	/* TIM8 enable counter */
 	TIM_Cmd(TIM8, ENABLE);
 }	
+#endif
+
+// UART0 for HOST, no hardflow 
+void UART0_initial(uint Baudrate,ushort HardFlow)
+{ 	
+    UART_InitTypeDef UART_InitStructure;
+
+	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_UART0, ENABLE);
+	SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_UART0, ENABLE);
+	
+	GPIO_PinRemapConfig(GPIOA, GPIO_Pin_0 | GPIO_Pin_1, GPIO_Remap_0);	
+	
+	UART_InitStructure.UART_BaudRate = Baudrate;
+	UART_InitStructure.UART_WordLength = UART_WordLength_8b;
+	UART_InitStructure.UART_StopBits = UART_StopBits_1;
+	UART_InitStructure.UART_Parity = UART_Parity_No;
+	
+	UART_Init(UART1, &UART_InitStructure);
+
+	//UART_AutoFlowCtrlCmd(UART0, ENABLE);
+	
+	// Enable Interrupt
+	UART_ITConfig(UART0, UART_IT_RX_RECVD, ENABLE);
+}
+
+// UART1 for RF(SPARE), no hardflow
+void UART1_initial(uint Baudrate,ushort HardFlow)
+{
+	UART_InitTypeDef UART_InitStructure;
+
+	//UART1 for RF
+	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_UART1, ENABLE);
+	SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_UART1, ENABLE);
+	
+	GPIO_PinRemapConfig(GPIOB, GPIO_Pin_12 | GPIO_Pin_13, GPIO_Remap_3);	
+	
+	UART_InitStructure.UART_BaudRate = Baudrate;
+	UART_InitStructure.UART_WordLength = UART_WordLength_8b;
+	UART_InitStructure.UART_StopBits = UART_StopBits_1;
+	UART_InitStructure.UART_Parity = UART_Parity_No;
+	
+	UART_Init(UART1, &UART_InitStructure);
+
+	//UART_AutoFlowCtrlCmd(UART0, ENABLE);
+
+	// Enable Interrupt
+	UART_ITConfig(UART1, UART_IT_RX_RECVD, ENABLE);
+}
+
+// UART2 for debug, barcode, no hardflow
+void UART2_initial(uint Baudrate,ushort HardFlow)
+{
+	UART_InitTypeDef UART_InitStructure;
+
+	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_UART2, ENABLE);
+	SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_UART2, ENABLE);
+	
+	GPIO_PinRemapConfig(GPIOD, GPIO_Pin_8 | GPIO_Pin_9, GPIO_Remap_2);	
+	
+	UART_InitStructure.UART_BaudRate = Baudrate;
+	UART_InitStructure.UART_WordLength = UART_WordLength_8b;
+	UART_InitStructure.UART_StopBits = UART_StopBits_1;
+	UART_InitStructure.UART_Parity = UART_Parity_No;
+	
+	UART_Init(UART2, &UART_InitStructure);
+
+	//UART_AutoFlowCtrlCmd(UART0, ENABLE);
+
+	// Enable Interrupt
+	UART_ITConfig(UART2, UART_IT_RX_RECVD, ENABLE);
+}
+
+// SPI2 for MMD1100
+void SPI2_initial(void)		// SPI_Configuration
+{
+	SPI_InitTypeDef SPI_InitStructure;
+
+	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_SPI2, ENABLE);
+	SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_SPI2, ENABLE);
+    
+    //SPI2, GPIO_Pin_3 for reset
+    GPIO_PinRemapConfig(GPIOB, GPIO_Pin_2 /*| GPIO_Pin_3*/ | GPIO_Pin_4 | GPIO_Pin_5, GPIO_Remap_0);
+	
+    SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
+	SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
+	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
+	SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
+	SPI_InitStructure.SPI_NSS = SPI_NSS_Null;				/*SPI_NSS_0*/
+	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256;
+	SPI_InitStructure.SPI_RXFIFOFullThreshold = SPI_RXFIFOFullThreshold_1;
+	SPI_InitStructure.SPI_TXFIFOEmptyThreshold = SPI_TXFIFOEmptyThreshold_10;
+	
+	SPI_Init(SPIM2, &SPI_InitStructure);
+    SPI_Cmd(SPIM2, ENABLE);
+}
+
+
+
+
+#if 0 // 필요없음
 
 /******************************************************************************************************/
 /* UART1_initial	:		R3 : HOST, other : RF					       						      */												
@@ -1529,26 +1577,6 @@ void UART1_initial(uint Baudrate,ushort HardFlow)
 	}
 	/* Enable USART1 */
 	USART_Cmd(USART1, ENABLE);
-}
-// UART0 for HOST, no hardflow 
-void UART0_initial(uint Baudrate,ushort HardFlow)
-{ 	
-    UART_InitTypeDef UART_InitStructure;
-
-	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_UART0, ENABLE);
-	SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_UART0, ENABLE);
-	
-	GPIO_PinRemapConfig(GPIOA, GPIO_Pin_0 | GPIO_Pin_1, GPIO_Remap_0);	
-	
-	UART_InitStructure.UART_BaudRate = Baudrate;
-	UART_InitStructure.UART_WordLength = UART_WordLength_8b;
-	UART_InitStructure.UART_StopBits = UART_StopBits_1;
-	UART_InitStructure.UART_Parity = UART_Parity_No;
-	
-	UART_Init(UART1, &UART_InitStructure);
-
-	//UART_AutoFlowCtrlCmd(UART0, ENABLE);
-
 }
 
 /******************************************************************************************************/
@@ -1782,7 +1810,7 @@ void UART5_initial()
 	/* Enable USART5 */
 	USART_Cmd(UART5, ENABLE);
 }
-
+#endif
 /******************************************************************************************************/
 /* EXTI_initial	:		FRONT SENSOR, REAR SENSOR 작동에 의한 MS 디코드, CARD EJECT				      */												
 /******************************************************************************************************/
@@ -2123,13 +2151,12 @@ void DMA_initial_org(void)
 //domyst
 void DMA_initial(void)
 {
-
+#ifdef USE_UART_DMA
 	DMA_InitTypeDef DMA_InitStruct;
 	
 	//memory to memory
 	DMA_InitStruct.DMA_DIR = DMA_DIR_Peripheral_To_Memory;
 	DMA_InitStruct.DMA_Peripheral = NULL;
-	//DMA_InitStruct.DMA_PeripheralBaseAddr = uart1_DR1;					//(uint32_t)&src_Buf[0];
 	DMA_InitStruct.DMA_PeripheralBaseAddr = UART0->OFFSET_0.RBR;
     DMA_InitStruct.DMA_PeripheralInc = DMA_Inc_Nochange;				//DMA_Inc_Increment;
 	DMA_InitStruct.DMA_PeripheralDataSize = DMA_DataSize_Byte;			//DMA_DataSize_Word;
@@ -2140,87 +2167,17 @@ void DMA_initial(void)
 	DMA_InitStruct.DMA_MemoryInc = DMA_Inc_Increment;
 	DMA_InitStruct.DMA_MemoryDataSize = DMA_DataSize_Byte;				//DMA_DataSize_Word;
 	DMA_InitStruct.DMA_MemoryBurstSize = DMA_BurstSize_1;
-	DMA_InitStruct.DMA_BlockSize = sizeof(src_Buf) / 4;		// ???
+	DMA_InitStruct.DMA_BlockSize = sizeof(src_Buf) / 4;					// ???
 	
 	DMA_Init(DMA_Channel_0,&DMA_InitStruct);
 
 	// domyst Enable 위치 확인 필
 	DMA_ChannelCmd(DMA_Channel_0, ENABLE);
 	//
-#ifdef USE_UART_DMA
-	
-	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1,ENABLE);
-	DMA_StructInit(&DMA_InitStructure);
-
-	/* DMA1 channel3 configuration ----------------------------------------------*/
-	if(g_pcb_version == PCB_CR30_R3)
-	{
-		DMA_DeInit(DMA1_Channel5);
-		DMA_InitStructure.DMA_PeripheralBaseAddr = uart1_DR1;//uart3_DR1;		//pbbch 1712112 volatile 형변환 불가.....
-		DMA_InitStructure.DMA_MemoryBaseAddr = (u32)&DMATEst;
-		DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
-		DMA_InitStructure.DMA_BufferSize = DMABufferSize;
-		DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-		DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-		DMA_InitStructure.DMA_PeripheralDataSize = DMA_MemoryDataSize_Byte;
-		DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
-		DMA_InitStructure.DMA_Mode = DMA_Mode_Circular; //DMA_Mode_Normal; // 2016.01.27 changed normal -> circular!
-		DMA_InitStructure.DMA_Priority = DMA_Priority_High; 	/* DMA_Priority_Medium */
-		DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;
-		//DMA_ITConfig(DMA1_Channel3, DMA_IT_TE, ENABLE);
-		DMA_Init(DMA1_Channel5, &DMA_InitStructure);
-	    /* Enable DMA channel1 */
-		DMA_Cmd(DMA1_Channel5, ENABLE);
-	}
-	else
-	{
-		DMA_DeInit(DMA1_Channel3);
-		DMA_InitStructure.DMA_PeripheralBaseAddr = uart3_DR1;					//pbbch 1712112 volatile 형변환 불가.....
-		DMA_InitStructure.DMA_MemoryBaseAddr = (u32)&DMATEst;
-		DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
-		DMA_InitStructure.DMA_BufferSize = DMABufferSize;
-		DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-		DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-		DMA_InitStructure.DMA_PeripheralDataSize = DMA_MemoryDataSize_Byte;
-		DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
-		DMA_InitStructure.DMA_Mode = DMA_Mode_Circular; //DMA_Mode_Normal; // 2016.01.27 changed normal -> circular!
-		DMA_InitStructure.DMA_Priority = DMA_Priority_High; 	/* DMA_Priority_Medium */
-		DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;
-		//DMA_ITConfig(DMA1_Channel3, DMA_IT_TE, ENABLE);
-		DMA_Init(DMA1_Channel3, &DMA_InitStructure);
-	    /* Enable DMA channel1 */
-		DMA_Cmd(DMA1_Channel3, ENABLE);
-	}
-#endif
-
-	if(!(g_pcb_version & PCB_GEM_POS))
-	{
-		// gempos는 ADC 사용안함.
-		RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1,ENABLE);
-
-		DMA_StructInit(&DMA_InitStructure);
-
-		// DMA1 channel3 configuration ----------------------------------------------//
-		DMA_DeInit(DMA1_Channel1);
-		DMA_InitStructure.DMA_PeripheralBaseAddr = ADC_1_DR;				//pbbch 1712112 volatile 형변환 불가.....
-		DMA_InitStructure.DMA_MemoryBaseAddr = (u32)&ADC_DMA_Buffer;
-		DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
-		DMA_InitStructure.DMA_BufferSize = (Number_of_ADC*Number_of_Buf);	//pbbch 180503 sen5 추가로 ADC Buffer size 늘림.
-		DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-		DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-		DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
-		DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
-		DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
-		DMA_InitStructure.DMA_Priority = DMA_Priority_High; 	//// DMA_Priority_Medium ///
-		DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;
-
-		//DMA_ITConfig(DMA1_Channel1, DMA_IT_TC, ENABLE);
-
-		DMA_Init(DMA1_Channel1, &DMA_InitStructure);
-		   /// Enable DMA channel1 /
-		DMA_Cmd(DMA1_Channel1, ENABLE);
-	}
+#endif	
 }
+
+#if 0 	// 필요없다
 /******************************************************************************************************/
 /* ADC_initial	:		AMP 						      */												
 /******************************************************************************************************/
@@ -2272,7 +2229,7 @@ void ADC_initial(void)
 	/* Start ADC1 Software Conversion */
 	ADC_SoftwareStartConvCmd(ADC1, ENABLE);
 }
-
+#endif
 /******************************************************************************************************/
 /* FLASH_ReadChar	: 저장된 플래시의 char 값을 읽어온다.					      */												
 /******************************************************************************************************/
@@ -2530,7 +2487,7 @@ uint SetBaudrate(uchar StatBaud)
 	}
 		
 }
-
+#if 0
 void Check_RF_Con()
 {
 	#ifdef RF_NFC
@@ -2558,10 +2515,11 @@ void Check_RF_Con()
 		}
 	}
 }
+#endif
 /******************************************************************************************************/
 /* OptionByte_initial	:	uart 통신 속도, 펌웨어 업데이트, 리셋 명령 플래그 확인			      */												
 /******************************************************************************************************/
-void OptionByte_initial(void)
+void OptionByte_initial_org(void)
 {
 	uchar OptionByte;
 	uchar BaudrateStat;
@@ -2612,7 +2570,7 @@ void OptionByte_initial(void)
 
 }
 // domyst
-void OptionByte_initial1(void)
+void OptionByte_initial(void)
 {
 	uchar OptionByte;
 	uchar BaudrateStat;
@@ -3262,14 +3220,24 @@ void CORTEX_initial(void)
 	// NVIC_initial();               // vector initial
 
 	// System init
+	QSPI_Init(NULL);
+
 	SYSCTRL_SYSCLKSourceSelect(SELECT_INC12M);		// internal clock
 	SYSCTRL_PLLConfig(SYSCTRL_PLL_192MHz);
 	SYSCTRL_PLLDivConfig(SYSCTRL_PLL_Div_None);
 	SYSCTRL_HCLKConfig(SYSCTRL_HCLK_Div2);
 //	SYSCTRL_PCLKConfig(SYSCTRL_PCLK_Div2);	/* PCLK >= 48M */
 
-	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_GPIO, ENABLE);
+	QSPI_SetLatency(0);
+
+	// SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_GPIO, ENABLE);
+	// SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_UART0 | SYSCTRL_APBPeriph_TIMM0 | SYSCTRL_APBPeriph_GPIO, ENABLE);
+
+	SYSCTRL_AHBPeriphClockCmd(SYSCTRL_AHBPeriph_DMA, ENABLE);
+	SYSCTRL_AHBPeriphResetCmd(SYSCTRL_AHBPeriph_DMA, ENABLE);
+	
 	SYSCTRL_APBPeriphClockCmd(SYSCTRL_APBPeriph_UART0 | SYSCTRL_APBPeriph_TIMM0 | SYSCTRL_APBPeriph_GPIO, ENABLE);
+	SYSCTRL_APBPeriphResetCmd(SYSCTRL_APBPeriph_UART0 | SYSCTRL_APBPeriph_TIMM0, ENABLE);
 
 	SYSTICK_Init();
 
@@ -3545,7 +3513,6 @@ void FLASH_ProgramOptionByteData(uint32_t Address, uint8_t Data)
 	
 	//FLASH_ProgramPage(FLASH_OPTION_ADDR, sizeof(Data), (uint8_t*)(Data));
 	//FLASH_ProgramPage(FLASH_OPTION_ADDR, X25Q_PAGE_SIZE, write_buf);
-	FLASH_ProgramPage(FLASH_OPTION_ADDR, 1, &Data);
+	FLASH_ProgramPage(FLASH_OPTION_ADDR, 1, &Data);		// domyst 4byte 이상 write 됨
 
 }
-/******************* (C) COPYRIGHT 2007 INSEM Inc ***************************************END OF FILE****/
