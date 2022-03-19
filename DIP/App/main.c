@@ -588,6 +588,10 @@ int main_ser_timer(void)
 #endif
 int main(void)
 {
+	appmain();
+}
+int main_bios_test(void)
+{
 	uint16_t	i;
 	uint8_t rxdata;
 	uint8_t *p;
