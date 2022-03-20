@@ -2,8 +2,13 @@
 #include	"main.h"
 #incldue 	"systick.h"
 
-#define uchar 	unsigned char
-#define ushort	unsigned short
+// #define uchar 	unsigned char
+// #define ushort	unsigned short
+
+typedef unsigned char 	uchar;
+typedef unsigned short 	ushort;
+typedef unsigned int  	uint;
+typedef unsigned long  	ulong;
 
 #define bOptionByte *(u32 *)(0x1ffff804)
 
