@@ -18,7 +18,7 @@
 #include <stdarg.h>
 
 #include "Gpio.h"
-#include "bit_define.h"
+//domyst 지움 #include "bit_define.h"
 //#include "stm32f10x_lib.h" // jsshin 2015.08.18
 #include "stm32f10x_init.h"
 #include "stm32f10x_it.h"
